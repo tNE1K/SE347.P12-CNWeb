@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Login page{% endblock %}
+
+{% block content %}
+
+{% if message %}
+    <div class="alert alert-secondary" role="alert">
+        <p>{{ message }}</p>
+    </div>
+{% endif %}
+
+<form action="" method="post">
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input type="text" id="Email" name="email" class="form-control" placeholder="Enter email">
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <input type="password" id="Password" name="password" class="form-control" placeholder="Password">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
