@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from utils.token_utils import create_jwt_token
 from models.user_model import User
+from utils.hash_utils import hash_password,verify_password
 import bcrypt
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -14,7 +15,7 @@ def login():
     password = data.get('password')
 
     user = User.find_by_email(email)
-    if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+    if user and verify_password(password, user['password']):
         token = create_jwt_token(user)
         print(token)
         return jsonify({"message": "Login successful", "token": token}), 200
@@ -35,7 +36,7 @@ def signup():
         return jsonify({"message": "Email already registered"}), 400
 
     # Hash the password
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    hashed_password = hash_password(password)
 
     # Insert the new user
     new_user = {

@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 import os
-from bson.objectid import ObjectId
 
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client['backend']
