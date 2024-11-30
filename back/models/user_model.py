@@ -3,13 +3,18 @@ import os
 
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client['backend']
-users_collection = db['users']
+user_collection = db['users']
 
 class User:
     @staticmethod
     def find_by_email(email):
-        return users_collection.find_one({"email": email})
-
+        return user_collection.find_one({"email": email})
+    
     @staticmethod
-    def insert_user(data):
-        return users_collection.insert_one(data)
+    def get_all_user():
+        users = user_collection.find()
+        users_list = [doc for doc in users]
+        for user in users_list:
+            user["_id"] = str(user["_id"])
+        return users_list
+    
