@@ -1,16 +1,19 @@
 "use client";
-import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { logIn as loginApi, logOut as logoutApi, signUp as signupApi } from "@/app/api/auth";
+import { fetchInfo } from "@/app/api/user";
 
 interface User {
-  name: string;
-  avatar: string;
+  id: string;
+  email: string;
+  role: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -21,52 +24,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Retrieve token and user from localStorage when the component first loads
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      axios.get("http://localhost:5000/auth/verify", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then((response) => {
-          setUser(response.data.user);
-        })
-        .catch(() => {
-          localStorage.removeItem("token");
+    const fetchUser = async () => {
+      try {
+        const response = await fetchInfo();
+        if (response) {
+          setUser(response);
+        } else {
           setUser(null);
-        });
-    }
-  }, []);  // This should run only once when the component mounts
+        }
+      } catch {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:5000/auth/login", { email, password });
-
-      const user = response.data.user;
-      const token = response.data.token;
-
-      if (token) {
-        localStorage.setItem("token", token);  // Store the token
-        setUser(user);  // Set the user
-        router.push("/");  // Redirect to the home page
-      } else {
-        console.error("No token in response");
+      const response = await loginApi(email, password);
+      if (response) {
+        setUser(response);
+        router.push(response.role === "admin" ? "/admin" : "/");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      throw new Error("Invalid credentials or server error");
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);  // Remove user on logout
-    router.push("/");  // Redirect to home page
+  const signup = async (email: string, password: string) => {
+    try {
+      await signupApi(email, password);
+      alert("Account created successfully! Redirecting to login...");
+      router.push("/login");
+    } catch (error) {
+      console.error("Signup failed:", error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await logoutApi();
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{ user, login, signup, logout, isAuthenticated: !!user }}
+    >
       {children}
     </AuthContext.Provider>
   );
