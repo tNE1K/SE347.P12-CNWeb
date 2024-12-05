@@ -18,3 +18,7 @@ class User:
         for user in users_list:
             user["_id"] = str(user["_id"])
         return users_list
+    
+    @staticmethod
+    def insert_user(user):
+        user_collection.insert_one(user)
