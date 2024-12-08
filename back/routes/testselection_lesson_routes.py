@@ -11,14 +11,14 @@ testselection_lesson_collection = db['testselection_lessons']
 @testselection_lesson_blueprint.route('/', methods=['POST'])
 def create_testselection_lesson():
     try:
-        data = request.get_json()
-        question = data.get("question")
-        explanation = data.get("explanation")
-        answerA = data.get("answerA")
-        answerB = data.get("answerB")
-        answerC = data.get("answerC")
-        answerD = data.get("answerD")
-        correctAnswer = data.get("correctAnswer")
+        
+        question = request.form.get("question")
+        explanation = request.form.get("explanation")
+        answerA = request.form.get("answerA")
+        answerB = request.form.get("answerB")
+        answerC = request.form.get("answerC")
+        answerD = request.form.get("answerD")
+        correctAnswer = request.form.get("correctAnswer")
 
         if not all([question, explanation, answerA, answerB, answerC, answerD, correctAnswer]):
             return jsonify({"message": "All fields are required for testselection lessons."}), 400

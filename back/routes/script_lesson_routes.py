@@ -9,10 +9,10 @@ script_lesson_collection = db['script_lessons']  # Collection for script lessons
 
 def create_script_lesson():
     try:
-        data = request.get_json()
+        
         # Extract fields
-        script_content = data.get('scriptContent') 
-        script_expected = data.get('scriptExpected')
+        script_content = request.form.get('scriptContent') 
+        script_expected = request.form.get('scriptExpected')
 
         # Validate input
         if not script_content or not script_expected:
