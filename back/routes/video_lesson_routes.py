@@ -12,14 +12,13 @@ video_lesson_collection = db['video_lessons']
 @video_lesson_blueprint.route('/', methods=['POST'])
 def create_video_lesson():
     try:
-        data = request.get_json()
-        file = data.get("file")
-        duration = data.get("duration")
+        file = request.form.get("file")
+        duration = request.form.get("duration")
 
         if not file or not duration:
             return jsonify({"message": "File and duration are required for video lessons."}), 400
 
-        video_lesson = {"file": file, "duration": duration}
+        video_lesson = {"file": file, "duration": int(duration)}
         result = video_lesson_collection.insert_one(video_lesson)
 
         return {"id": str(result.inserted_id)}, 201

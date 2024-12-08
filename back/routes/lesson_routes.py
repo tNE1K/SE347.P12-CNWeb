@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from pymongo import MongoClient
 from bson import ObjectId
-
+from models.lesson_model import Lesson
 import os
 from routes.video_lesson_routes import create_video_lesson
 from routes.testselection_lesson_routes import create_testselection_lesson
@@ -13,6 +13,7 @@ VALID_LESSON_TYPES = {"video", "testselection", "scriptlesson"}
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["backend"]
 lesson_collection = db["lessons"]
+course_collection = db["courses"]
 def parse_json(data):
     """
     Recursively parse JSON data and convert all ObjectId fields to string.
@@ -85,22 +86,32 @@ def get_all_lesson():
     }
 
     return jsonify(response), 200
+@lesson_blueprint.route('/<lesson_id>', methods=['GET'])
+def get_lesson(lesson_id):
+    lesson, error = Lesson.get_one(lesson_id)
+    
+    if error:
+        return jsonify({"message": error}), 400
+    
+    # Return the lesson data if found
+    return jsonify({"status": "success", "data": parse_json(lesson), "message": "Lesson retrieved successfully!"}), 200
+
 
 @lesson_blueprint.route('/', methods=['POST'])
 def create_lesson():
     try:
         # Parse data from the request
-        data = request.get_json()
-        title = data.get('title')
-        description = data.get('description')
-        lesson_type = data.get('type')  # Enum for video | testselection | scriptlesson
-        duration = data.get('duration')
+        title = request.form.get('title')
+        course_id = request.form.get('course_id')
+        description = request.form.get('description')
+        lesson_type = request.form.get('type')  # Enum for video | testselection | scriptlesson
+        duration = request.form.get('duration')
         
 
 
         # Validate input
-        if not title:
-            return jsonify({"message": "title are required."}), 400
+        if not title or not course_id:
+            return jsonify({"message": "title and course_id are required."}), 400
 
         if lesson_type not in VALID_LESSON_TYPES:
             return jsonify({
@@ -132,15 +143,41 @@ def create_lesson():
             "title": title,
             "description": description,
             "type": lesson_type,
-            "duration": duration,
+            "duration": int(duration),
             "resource": id,
             "comments": []
         }
 
         # Insert the lesson into the collection
-        lesson_collection.insert_one(new_lesson)
+        inserted_lesson = lesson_collection.insert_one(new_lesson)
+        created_lesson = lesson_collection.find_one({"_id": inserted_lesson.inserted_id})
+        resource_data = None
+        resource_id = created_lesson.get("resource", {}).get("id")
+        
+        if resource_id:
+            # Convert the resource_id to ObjectId
+            resource_id_obj = ObjectId(resource_id)
+            if created_lesson["type"] == "scriptlesson":
+                resource_data = db["script_lessons"].find_one({"_id": resource_id_obj})
+            elif created_lesson["type"] == "testselection":
+                resource_data = db["testselection_lessons"].find_one({"_id": resource_id_obj})
+            elif created_lesson["type"] == "video":
+                resource_data = db["video_lessons"].find_one({"_id": resource_id_obj})
 
-        return jsonify({"status": "success", "data": [], "message" :"lesson created successfully!"}), 201
+        # Add the resource data to the lesson
+        if resource_data:
+            created_lesson["resource"] = resource_data
+        
+        # query course by course_id and insert the id of createdlesson in to the array lessonIds 
+        course_update_result = course_collection.update_one(
+            {"_id": ObjectId(course_id)},
+            {"$push": {"lessonIds": str(inserted_lesson.inserted_id)}}
+        )
+        if course_update_result.matched_count == 0:
+            return jsonify({"message": "Course not found. Unable to update lessonIds."}), 404
+        
+
+        return jsonify({"status": "success", "data": parse_json(created_lesson), "message" :"lesson created successfully!"}), 201
 
     except Exception as e:
         return jsonify({"message": "Error creating lesson", "error": str(e)}), 500
@@ -186,17 +223,10 @@ def update_lesson(lesson_id):
 @lesson_blueprint.route('/<lesson_id>', methods=['DELETE'])
 def delete_lesson(lesson_id):
     try:
-        # Attempt to delete the lesson by its ID
-        result = lesson_collection.delete_one({"_id": ObjectId(lesson_id)})
 
-        # Check if the lesson was found and deleted
-        if result.deleted_count == 0:
-            return jsonify({"message": "Lesson not found."}), 404
+        response, status_code = Lesson.delete(lesson_id)
 
-        return jsonify({
-            "status": "success",
-            "message": "Lesson deleted successfully!"
-        }), 200
+        return jsonify(response), status_code
 
     except Exception as e:
         return jsonify({"message": "Error deleting lesson", "error": str(e)}), 500
