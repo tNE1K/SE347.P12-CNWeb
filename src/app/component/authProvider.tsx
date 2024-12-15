@@ -24,11 +24,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Set isMounted to true after the component has mounted
     setIsMounted(true);
 
     const fetchUser = async () => {
@@ -36,12 +35,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetchInfo();
         if (response) {
           setUser(response);
-          setIsAuthenticated(true); // Mark user as authenticated after fetching
+          setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(false); // If no user data, set as not authenticated
+          setIsAuthenticated(false);
         }
       } catch {
-        setIsAuthenticated(false); // If an error occurs, set as not authenticated
+        setIsAuthenticated(false);
       }
     };
 
@@ -59,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         setUser(response);
-        setIsAuthenticated(true); // Set authenticated after login success
+        setIsAuthenticated(true);
         router.push(response.role === "admin" ? "/admin" : "/");
       }
     } catch (error: any) {
@@ -86,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await logoutApi();
       setUser(null);
-      setIsAuthenticated(false); // Reset authentication state
+      setIsAuthenticated(false);
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -95,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   if (!isMounted) {
-    return null; // Ensure that we wait for the component to be mounted client-side
+    return null; // Wait for the component to be mounted on the client-side
   }
 
   return (
