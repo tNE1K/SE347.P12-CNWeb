@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string;
   role: string;
+  isVerify: boolean;
 }
 
 interface AuthContextType {
@@ -22,33 +23,51 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
   const router = useRouter();
 
   useEffect(() => {
+    // Set isMounted to true after the component has mounted
+    setIsMounted(true);
+
     const fetchUser = async () => {
       try {
         const response = await fetchInfo();
         if (response) {
           setUser(response);
+          setIsAuthenticated(true); // Mark user as authenticated after fetching
         } else {
-          setUser(null);
+          setIsAuthenticated(false); // If no user data, set as not authenticated
         }
       } catch {
-        setUser(null);
+        setIsAuthenticated(false); // If an error occurs, set as not authenticated
       }
     };
-    fetchUser();
-  }, []);
+
+    if (isMounted && isAuthenticated) {
+      fetchUser();
+    }
+  }, [isMounted, isAuthenticated]);
 
   const login = async (email: string, password: string) => {
     try {
       const response = await loginApi(email, password);
       if (response) {
+        if (!response.isVerify) {
+          alert("Account is not verified");
+          return;
+        }
         setUser(response);
+        setIsAuthenticated(true); // Set authenticated after login success
         router.push(response.role === "admin" ? "/admin" : "/");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        alert("Account not verified. Please verify your account.");
+      } else {
+        console.error("Login failed:", error);
+      }
     }
   };
 
@@ -67,6 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await logoutApi();
       setUser(null);
+      setIsAuthenticated(false); // Reset authentication state
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -74,9 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  if (!isMounted) {
+    return null; // Ensure that we wait for the component to be mounted client-side
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, login, signup, logout, isAuthenticated: !!user }}
+      value={{ user, login, signup, logout, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>
