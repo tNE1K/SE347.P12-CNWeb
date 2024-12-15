@@ -17,3 +17,23 @@ def get_all_user(payload):
         return jsonify({"data": users_json})
     else:
         return jsonify({"message": "No privillage"})
+    
+
+@admin_blueprint.route("/get_all_teacher", methods=["GET"])
+@token_required
+def get_all_teacher(payload):
+    if verify_admin(payload):
+        users_json = User.get_all_teacher()
+        return jsonify({"data": users_json})
+    else:
+        return jsonify({"message": "No privillage"})
+    
+
+@admin_blueprint.route("/get_all_course", methods=["GET"])
+@token_required
+def get_all_course(payload):
+    if verify_admin(payload):
+        users_json = User.get_all_course()
+        return jsonify({"data": users_json})
+    else:
+        return jsonify({"message": "No privillage"})
