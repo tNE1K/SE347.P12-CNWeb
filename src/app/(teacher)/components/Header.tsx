@@ -20,7 +20,7 @@ export default function Header() {
     }
   };
   return (
-    <div className="fixed left-0 right-0 top-0 ml-[17%] border-b-[1px] bg-white p-2 px-4">
+    <div className="fixed left-0 right-0 top-0 z-[10] ml-[17%] border-b-[1px] bg-white p-2 px-4">
       <div className="flex items-center justify-between">
         <p className="text-xl font-bold">{getHeaderTitle()}</p>
         <div

@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { convertISOToDate } from "@/app/utils/coverter";
+import AddCourseButton from "./components/AddCourseModal";
 const LIMIT = 4;
 export default function CoursesPage() {
   const { data } = useQuery({
@@ -21,7 +22,10 @@ export default function CoursesPage() {
 
   return (
     <div className="h-[2000px] px-6">
-      <div className="my-4 text-lg font-bold">Course List</div>
+      <div className="flex items-center justify-between">
+        <div className="my-4 text-lg font-bold">Course List</div>
+        <AddCourseButton />
+      </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
