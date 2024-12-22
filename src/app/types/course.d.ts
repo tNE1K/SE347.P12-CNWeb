@@ -13,3 +13,7 @@ export interface ICourse {
   title: string;
   createdAt: string;
 }
+export interface UpdateCoursePayload {
+  courseId: string;
+  data: FormData;
+}
