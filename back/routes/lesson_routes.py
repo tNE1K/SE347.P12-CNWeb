@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from pymongo import MongoClient
 from bson import ObjectId
+from datetime import datetime
 from models.lesson_model import Lesson
 import os
 from routes.video_lesson_routes import create_video_lesson
@@ -78,9 +79,9 @@ def get_all_lesson():
         "data": joined_lessons,
         "message": "lessons retrieved successfully!",
         "pagination": {
-            "total": total_lessons,
+            "page": page,
             "limit": limit,
-            "current_page": page,
+            "total_items": total_lessons,
             "total_pages": (total_lessons // limit) + (1 if total_lessons % limit > 0 else 0)  # Calculate total pages
         }
     }
@@ -101,6 +102,7 @@ def get_lesson(lesson_id):
 def create_lesson():
     try:
         # Parse data from the request
+        
         title = request.form.get('title')
         course_id = request.form.get('course_id')
         description = request.form.get('description')
@@ -145,7 +147,8 @@ def create_lesson():
             "type": lesson_type,
             "duration": int(duration),
             "resource": id,
-            "comments": []
+            "comments": [],
+            "createdAt": datetime.now().isoformat()
         }
 
         # Insert the lesson into the collection

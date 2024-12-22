@@ -12,6 +12,7 @@ video_lesson_collection = db['video_lessons']
 @video_lesson_blueprint.route('/', methods=['POST'])
 def create_video_lesson():
     try:
+        
         file = request.form.get("file")
         duration = request.form.get("duration")
 
