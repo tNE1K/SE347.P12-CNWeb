@@ -1,6 +1,8 @@
 from flask import Blueprint,jsonify,request
 from pymongo import MongoClient
 from bson import ObjectId
+from datetime import datetime
+
 from models.lesson_model import Lesson
 import os
 import json 
@@ -63,7 +65,7 @@ def get_all_course():
             "pagination": {
                 "page": page,
                 "limit": limit,
-                "total_courses": total_courses,
+                "total_items": total_courses,
                 "total_pages": total_pages
             },
             "message": "Courses fetched successfully!"
@@ -136,7 +138,8 @@ def create_course():
             "lessonIds": [],
             "comments": [],
             "status": status,
-            "label": label
+            "label": label,
+            "createdAt": datetime.now().isoformat()
         }
 
         courses_collection.insert_one(new_course)
@@ -148,19 +151,19 @@ def create_course():
 @course_blueprint.route('/<course_id>', methods=['PUT'])
 def update_course(course_id):
     try:
+        data = request.json
+        title = data.get('title')
+        description = data.get('description')
+        status = data.get('status')
+        label = data.get('label')  
 
-        title = request.form.get('title')
-        description = request.form.get('description')
-        status = request.form.get('status')
-        label = request.form.get('label')  
 
-
-        try:
-            label = json.loads(label) if label else []
-            if not isinstance(label, list):
-                return jsonify({"message": "Label must be a JSON array."}), 400
-        except json.JSONDecodeError:
-            return jsonify({"message": "Invalid JSON format for label."}), 400
+        # try:
+        #     label = json.loads(label) if label else []
+        #     if not isinstance(label, list):
+        #         return jsonify({"message": "Label must be a JSON array."}), 400
+        # except json.JSONDecodeError:
+        #     return jsonify({"message": "Invalid JSON format for label."}), 400
 
 
         if not title:
