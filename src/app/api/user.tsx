@@ -3,17 +3,20 @@ import axios from "axios";
 const API_URL = "http://localhost:5000/user";
 export const fetchInfo = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/auth/me", { withCredentials: true });
+    const response = await axios.get("http://localhost:5000/auth/me", {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
-    console.error("Error fetching user info:", error);
+    console.log("Error fetching user info:", error);
+    throw error;
   }
 };
 
 export const fetchCourse = async () => {
   try {
-    const response = await axios.get(`${API_URL}/course`, {
-      withCredentials: true
+    const response = await axios.get("http://localhost:5000/user/course", {
+      withCredentials: true,
     });
     console.log("User Data:", response.data);
   } catch (error) {
@@ -21,5 +24,4 @@ export const fetchCourse = async () => {
   }
 };
 
-export const changeInfo = async () => {
-};
+export const changeInfo = async () => {};
