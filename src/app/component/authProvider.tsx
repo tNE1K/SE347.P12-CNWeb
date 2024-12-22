@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string;
   role: string;
+  isVerify: boolean;
 }
 
 interface AuthContextType {
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,11 +32,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetchInfo();
         if (response) {
           setUser(response);
+          setIsAuthenticated(true);
         } else {
-          setUser(null);
+          setIsAuthenticated(false);
         }
       } catch {
-        setUser(null);
+        setIsAuthenticated(false);
       }
     };
     fetchUser();
@@ -44,11 +47,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await loginApi(email, password);
       if (response) {
+        if (!response.isVerify) {
+          alert("Account is not verified");
+          return;
+        }
         setUser(response);
+        setIsAuthenticated(true);
         router.push(response.role === "admin" ? "/admin" : "/");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (error: any) {
+      alert(error)
     }
   };
 
@@ -67,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await logoutApi();
       setUser(null);
+      setIsAuthenticated(false);
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -76,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, signup, logout, isAuthenticated: !!user }}
+      value={{ user, login, signup, logout, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>
