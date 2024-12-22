@@ -1,6 +1,6 @@
 import React from "react";
-import NavBar from "@/app/component/navBar";
 import SideBar from "./components/SideMenu";
+import Header from "./components/Header";
 
 export default function TeacherLayout({
   children,
@@ -9,9 +9,12 @@ export default function TeacherLayout({
 }) {
   return (
     <div className={"flex flex-row"}>
-      <SideBar />
-      <div className={"flex w-full flex-col"}>
-        {/* <NavBar /> */}
+      <div className="basis-[17%]">
+        <SideBar />
+      </div>
+      <div className={"relative flex w-full basis-[83%] flex-col"}>
+        <Header />
+        <div className="mt-[60px]"></div>
         {children}
       </div>
     </div>
