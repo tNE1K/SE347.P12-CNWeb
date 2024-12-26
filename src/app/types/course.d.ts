@@ -16,10 +16,11 @@ export interface ICourse {
 export interface UpdateCoursePayload {
   courseId: string;
   data: {
-    title: string;
-    description: string;
-    status: string;
-    label: string[];
-    cover: string;
+    title?: string;
+    description?: string;
+    status?: string;
+    label?: string[];
+    cover?: string;
+    lessonIds?: string[];
   };
 }

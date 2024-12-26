@@ -63,6 +63,9 @@ export function EditCourseModal({
       queryClient.invalidateQueries({
         queryKey: ["courses"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["course-detail"],
+      });
     },
     onError: (error: any) => {
       toast.error(`Error: ${error?.message || "Something went wrong"}`);
