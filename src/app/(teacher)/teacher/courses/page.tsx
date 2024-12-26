@@ -1,7 +1,7 @@
 "use client";
 import { getAllCourse } from "@/app/api/course";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
+import React, { useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -12,14 +12,20 @@ import Paper from "@mui/material/Paper";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { convertISOToDate } from "@/app/utils/coverter";
 import AddCourseButton from "./components/AddCourseModal";
+import { Pagination } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import Link from "next/link";
 const LIMIT = 4;
 export default function CoursesPage() {
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState("-createdAt");
   const { data } = useQuery({
-    queryKey: ["courses", { page: 1, limit: LIMIT }],
-    queryFn: () => getAllCourse(1, LIMIT),
+    queryKey: ["courses", { page: page, limit: LIMIT, order: sortBy }],
+    queryFn: () => getAllCourse(page, LIMIT, sortBy),
   });
   const courses = data?.data || [];
-
+  const totalPages = data?.pagination?.total_pages;
   return (
     <div className="h-[2000px] px-6">
       <div className="flex items-center justify-between">
@@ -34,16 +40,55 @@ export default function CoursesPage() {
                 No
               </TableCell>
               <TableCell sx={{ width: "40%" }} align="left">
-                Name
+                <div
+                  className="flex cursor-pointer items-center gap-2"
+                  onClick={() =>
+                    setSortBy((prev) => {
+                      if (prev === "title") {
+                        return "-title";
+                      } else return "title";
+                    })
+                  }
+                >
+                  <p>Name</p>
+                  {sortBy === "title" && <ExpandMoreIcon />}
+                  {sortBy === "-title" && <ExpandLessIcon />}
+                </div>
               </TableCell>
               <TableCell sx={{ width: "15%" }} align="center">
                 Total lessons
               </TableCell>
               <TableCell sx={{ width: "15%" }} align="center">
-                Created date
+                <div
+                  className="flex cursor-pointer items-center justify-center gap-1"
+                  onClick={() =>
+                    setSortBy((prev) => {
+                      if (prev === "createdAt") {
+                        return "-createdAt";
+                      } else return "createdAt";
+                    })
+                  }
+                >
+                  <p>Created date</p>
+                  {sortBy === "createdAt" && <ExpandMoreIcon />}
+                  {sortBy === "-createdAt" && <ExpandLessIcon />}
+                </div>
               </TableCell>
               <TableCell sx={{ width: "15%" }} align="center">
-                Rating
+                <div
+                  className="flex cursor-pointer items-center justify-center gap-1"
+                  onClick={() =>
+                    setSortBy((prev) => {
+                      if (prev === "rating") {
+                        return "-rating";
+                      } else return "rating";
+                    })
+                  }
+                >
+                  <p>Rating</p>
+                  {sortBy === "rating" && <ExpandMoreIcon />}
+                  {sortBy === "-rating" && <ExpandLessIcon />}
+                </div>
               </TableCell>
               <TableCell sx={{ width: "10%" }} align="center">
                 Detail
@@ -76,13 +121,26 @@ export default function CoursesPage() {
                 </TableCell>
                 <TableCell align="center">{course.rating}/5</TableCell>
                 <TableCell align="center">
-                  <OpenInNewIcon className="cursor-pointer" />
+                  <Link href={`/teacher/courses/${course._id}`}>
+                    <OpenInNewIcon className="cursor-pointer" />
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <div className="my-4 flex justify-center">
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => {
+            setPage(value);
+          }}
+          variant="outlined"
+          color="primary"
+        />
+      </div>
     </div>
   );
 }
