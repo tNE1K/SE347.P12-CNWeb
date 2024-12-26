@@ -15,5 +15,11 @@ export interface ICourse {
 }
 export interface UpdateCoursePayload {
   courseId: string;
-  data: FormData;
+  data: {
+    title: string;
+    description: string;
+    status: string;
+    label: string[];
+    cover: string;
+  };
 }
