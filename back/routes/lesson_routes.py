@@ -189,29 +189,64 @@ def create_lesson():
 def update_lesson(lesson_id):
     try:
         # Parse data from the request
-        data = request.get_json()
-        title = data.get('title')
-        description = data.get('description')
-        duration = data.get('duration')  # Enum for video | testselection | scriptlesson
-        comments = data.get('comments', [])  # Default to empty list if no comments provided
+        title = request.form.get('title')
+        description = request.form.get('description')
+        duration = request.form.get('duration')  # Enum for video | testselection | scriptlesson
+        comments = request.form.get('comments', [])  # Default to empty list if no comments provided
+        lesson_type = request.form.get('type')  # Enum for video | testselection | scriptlesson  
+        # Find the lesson by ID
+        lesson = lesson_collection.find_one({"_id": ObjectId(lesson_id)})
+        if not lesson:
+            return jsonify({"message": "Lesson not found."}), 404
+        
+        new_resource_id = None
+        if lesson_type:
+            old_resource_id = lesson.get("resource._id")
 
-        # Prepare update data
-        update_data = {
-            "title": title,
-            "description": description,
-            "duration": duration,
-            "comments": comments
-        }
+            # Delete the old resource based on its type
+            if old_resource_id:
+                resource_id_obj = ObjectId(old_resource_id)
+                if lesson["type"] == "scriptlesson":
+                    db["script_lessons"].delete_one({"_id": resource_id_obj})
+                elif lesson["type"] == "testselection":
+                    db["testselection_lessons"].delete_one({"_id": resource_id_obj})
+                elif lesson["type"] == "video":
+                    db["video_lessons"].delete_one({"_id": resource_id_obj})
+
+            # Create a new resource based on the new lesson type
+            if lesson_type == "video":
+                response = create_video_lesson()
+            elif lesson_type == "testselection":
+                response = create_testselection_lesson()
+            elif lesson_type == "scriptlesson":
+                response = create_script_lesson()
+            else:
+                return jsonify({"message": f"Invalid lesson type: {lesson_type}"}), 400
+
+            if response[1] == 201:
+                new_resource_id = response[0]
+            else:
+                return response
+
+        update_data = {}
+        if title:
+            update_data["title"] = title
+        if description:
+            update_data["description"] = description
+        if duration:
+            update_data["duration"] = int(duration)
+        if comments:
+            update_data["comments"] = comments
+        if lesson_type:
+            update_data["type"] = lesson_type
+        if new_resource_id:
+            update_data["resource"] = new_resource_id
 
         # Update the lesson in the database
         result = lesson_collection.update_one(
-            {"_id": ObjectId(lesson_id)},  # Find the lesson by its ObjectId
-            {"$set": update_data}  # Set the fields to update
+            {"_id": ObjectId(lesson_id)},
+            {"$set": update_data}
         )
-
-        if result.matched_count == 0:
-            return jsonify({"message": "Lesson not found."}), 404
-
         if result.modified_count == 0:
             return jsonify({"message": "No changes were made to the lesson."}), 400
 
