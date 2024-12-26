@@ -35,13 +35,23 @@ def get_all_course():
 
         page = request.args.get('page', default=1, type=int)  
         limit = request.args.get('limit', default=10, type=int) 
+        order = request.args.get('order', default='createdAt')
+        if not order.strip():  # This will handle both empty strings and strings with only spaces
+            order = 'createdAt'
+        valid_sort_fields = {"createdAt", "title", "-createdAt", "-title","rating","-rating"}
 
+        # Check if order is valid
+        if not order or order not in valid_sort_fields:
+            return jsonify({"message": f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"}), 400
+        
+
+        sort_field = order.lstrip('-')  
+        sort_direction = -1 if order.startswith('-') else 1 
         if page < 1 or limit < 1:
             return jsonify({"message": "Page and limit must be positive integers."}), 400
 
         skip = (page - 1) * limit
-
-        courses_cursor = courses_collection.find().skip(skip).limit(limit)
+        courses_cursor = courses_collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
         courses = list(courses_cursor)  
 
         total_courses = courses_collection.count_documents({})
@@ -53,8 +63,7 @@ def get_all_course():
                 lesson, error = Lesson.get_one(lesson_id)
                 if lesson:
                     lesson_data.append(lesson)
-                elif error:
-                    lesson_data.append({"lesson_id": lesson_id, "error": error})
+                
             course["lessonIds"] = lesson_data
         
         courses = [parse_json(course) for course in courses]
@@ -88,8 +97,8 @@ def get_course_by_id(course_id):
             lesson, error = Lesson.get_one(lesson_id)
             if lesson:
                 lesson_data.append(lesson)
-            elif error:
-                lesson_data.append({"lesson_id": lesson_id, "error": error})
+            # elif error:
+            #     lesson_data.append({"lesson_id": lesson_id, "error": error})
 
         course["lessonIds"] = lesson_data
         course = parse_json(course)
@@ -156,6 +165,8 @@ def update_course(course_id):
         description = data.get('description')
         status = data.get('status')
         label = data.get('label')  
+        cover = data.get('cover')  
+        lessonIds = data.get('lessonIds')  
 
 
         # try:
@@ -164,14 +175,6 @@ def update_course(course_id):
         #         return jsonify({"message": "Label must be a JSON array."}), 400
         # except json.JSONDecodeError:
         #     return jsonify({"message": "Invalid JSON format for label."}), 400
-
-
-        if not title:
-            return jsonify({"message": "Title is required."}), 400
-        if status not in ["publish", "hide"]:
-            return jsonify({"message": "Invalid status. Allowed values are 'publish' or 'hide'."}), 400
-
-
         update_data = {}
         if title:
             update_data["title"] = title
@@ -181,8 +184,10 @@ def update_course(course_id):
             update_data["status"] = status
         if label:
             update_data["label"] = label
-
-
+        if cover: 
+            update_data["cover"] = cover
+        if lessonIds: 
+            update_data["lessonIds"] = lessonIds
         result = courses_collection.update_one(
             {"_id": ObjectId(course_id)}, 
             {"$set": update_data} 
