@@ -1,55 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Paper } from "@mui/material";
-import { fetchAllUser } from "@/app/api/admin";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 const columns: GridColDef[] = [
   { field: "index", headerName: "Index", width: 200 },
   { field: "_id", headerName: "ID", width: 200 },
   { field: "email", headerName: "Email", width: 250 },
-  { field: "role", headerName: "Role", width: 150 }
+  { field: "role", headerName: "Role", width: 150 },
 ];
 
+const fetchAllUsers = async () => {
+  const response = await axios.get("http://localhost:5000/admin/get_all_user", {
+    withCredentials: true,
+  });
+  return response.data.data.map((user: any, index: number) => ({
+    id: index + 1,
+    index: index + 1,
+    _id: user._id,
+    email: user.email,
+    role: user.role,
+  }));
+};
+
 export default function UserDataTable() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const onRowsSelectionHandler = (ids: any) => {
-    // @ts-ignore
-    const selectedRowsData = ids.map((id: any) => rows.find((row) => row.id === id));
-    console.log(selectedRowsData);
-  };
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchAllUser();
-        const formattedData = data.data.map((user: any, index: number) => ({
-          id: index + 1,
-          index: index + 1,
-          _id: user._id,
-          email: user.email,
-          role: user.role
-        }));
-        setRows(formattedData);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    void loadData();
-  }, []);
-
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchAllUsers,
+    refetchInterval: 10000,
+    refetchOnWindowFocus: true,
+  });
 
   return (
     <Paper sx={{ height: "100%", width: "100%" }}>
       <DataGrid
         rows={rows}
         columns={columns}
-        loading={loading}
+        loading={isLoading}
         pageSizeOptions={[5, 10]}
         checkboxSelection
-        onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
         sx={{ border: 0 }}
       />
     </Paper>
