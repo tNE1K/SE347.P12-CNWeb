@@ -1,15 +1,10 @@
 "use client";
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { logIn as loginApi, logOut as logoutApi, signUp as signupApi } from "@/app/api/auth";
 import { fetchInfo } from "@/app/api/user";
+import { User } from "@/app/types/user";
+import { useRouter } from "next/navigation";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  isVerify: boolean;
-}
 
 interface AuthContextType {
   user: User | null;
