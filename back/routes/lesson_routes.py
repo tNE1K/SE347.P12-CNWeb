@@ -207,9 +207,14 @@ def update_lesson(lesson_id):
         if not lesson:
             return jsonify({"message": "Lesson not found."}), 404
  
+        
         new_resource_id = None
         if lesson_type and lesson_type == "video":
-            old_resource_id = lesson.get("resource", [])[0]
+            old_resource_id = lesson.get("resource", [])
+            if old_resource_id:
+                old_resource_id = old_resource_id[0]
+            else:
+                old_resource_id = None
             # Delete the old resource based on its type
             if old_resource_id:
                 resource_id_obj = ObjectId(old_resource_id)
