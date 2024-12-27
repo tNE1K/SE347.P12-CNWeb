@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from utils.token_utils import is_token_expired
+from bson import ObjectId
 import os
 
 client = MongoClient(os.getenv("MONGO_URI"))
@@ -51,3 +52,9 @@ class User:
     @staticmethod
     def update_user_field(email, update_data):
         return user_collection.update_one({"email": email}, {"$set": update_data})
+    
+    @staticmethod
+    def set_verify_request(id):
+        return user_collection.update_one(
+            {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": True}}
+        )
