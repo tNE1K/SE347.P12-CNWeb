@@ -65,7 +65,6 @@ def get_all_course():
                     lesson_data.append(lesson)
                 
             course["lessonIds"] = lesson_data
-        
         courses = [parse_json(course) for course in courses]
 
         return jsonify({
