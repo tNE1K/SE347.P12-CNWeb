@@ -7,6 +7,7 @@ import os
 from routes.video_lesson_routes import create_video_lesson
 from routes.testselection_lesson_routes import create_testselection_lesson
 from routes.script_lesson_routes import create_script_lesson
+import json
 
 lesson_blueprint = Blueprint('lesson', __name__)
 VALID_LESSON_TYPES = {"video", "testselection", "scriptlesson"}
@@ -50,12 +51,13 @@ def get_all_lesson():
     # Prepare to join resource data
     joined_lessons = []
     for lesson in lessons:
-        resource_data = None
-        resource_id = lesson.get("resource", {}).get("id")
+        resources_data = []
+        resource_ids = lesson.get("resource", [])
         
-        if resource_id:
-            # Convert the resource_id to ObjectId
+        for resource_id in resource_ids:
             resource_id_obj = ObjectId(resource_id)
+            resource_data = None
+
             if lesson["type"] == "scriptlesson":
                 resource_data = db["script_lessons"].find_one({"_id": resource_id_obj})
             elif lesson["type"] == "testselection":
@@ -63,11 +65,11 @@ def get_all_lesson():
             elif lesson["type"] == "video":
                 resource_data = db["video_lessons"].find_one({"_id": resource_id_obj})
 
-        # Add the resource data to the lesson
-        if resource_data:
-            lesson["resource"] = resource_data
+            if resource_data:
+                resources_data.append(resource_data)
 
-        # Add the lesson to the joined lessons list
+        # Add the resources data to the lesson
+        lesson["resource"] = resources_data
         joined_lessons.append(lesson)
 
     # Convert ObjectId fields to strings and add 'id' field
@@ -110,7 +112,7 @@ def create_lesson():
         duration = request.form.get('duration')
         
 
-
+        
         # Validate input
         if not title or not course_id:
             return jsonify({"message": "title and course_id are required."}), 400
@@ -120,7 +122,7 @@ def create_lesson():
                 "message": f"Invalid lesson type. Allowed types are: {', '.join(VALID_LESSON_TYPES)}."
             }), 400
         id = ""
-
+        resourceIds = []
         # Handle specific types of lessons
         if lesson_type == "video":
             response = create_video_lesson()
@@ -140,25 +142,24 @@ def create_lesson():
                 id = response[0]
             else:
                 return response
+    
+        resourceIds.append(str(id['id']))
         # Create a new lesson document
         new_lesson = {
             "title": title,
             "description": description,
             "type": lesson_type,
             "duration": int(duration),
-            "resource": id,
+            "resource": resourceIds,
             "comments": [],
             "createdAt": datetime.now().isoformat()
         }
-
         # Insert the lesson into the collection
         inserted_lesson = lesson_collection.insert_one(new_lesson)
+
         created_lesson = lesson_collection.find_one({"_id": inserted_lesson.inserted_id})
-        resource_data = None
-        resource_id = created_lesson.get("resource", {}).get("id")
-        
-        if resource_id:
-            # Convert the resource_id to ObjectId
+        resources_data = []
+        for resource_id in resourceIds:
             resource_id_obj = ObjectId(resource_id)
             if created_lesson["type"] == "scriptlesson":
                 resource_data = db["script_lessons"].find_one({"_id": resource_id_obj})
@@ -167,9 +168,11 @@ def create_lesson():
             elif created_lesson["type"] == "video":
                 resource_data = db["video_lessons"].find_one({"_id": resource_id_obj})
 
-        # Add the resource data to the lesson
-        if resource_data:
-            created_lesson["resource"] = resource_data
+            if resource_data:
+                resources_data.append(resource_data)
+
+        # Add the resources data to the lesson
+        created_lesson["resources"] = resources_data
         
         # query course by course_id and insert the id of createdlesson in to the array lessonIds 
         course_update_result = course_collection.update_one(
@@ -191,43 +194,37 @@ def update_lesson(lesson_id):
         # Parse data from the request
         title = request.form.get('title')
         description = request.form.get('description')
-        duration = request.form.get('duration')  # Enum for video | testselection | scriptlesson
+        duration = request.form.get('duration')  
         comments = request.form.get('comments', [])  # Default to empty list if no comments provided
         lesson_type = request.form.get('type')  # Enum for video | testselection | scriptlesson  
+        selection_ids_str = request.form.get('selectionIds')  # Array of resourceIds to update directly only for testselection  
+        if selection_ids_str:
+            selection_ids = json.loads(selection_ids_str)
+        else:
+            selection_ids = []
         # Find the lesson by ID
         lesson = lesson_collection.find_one({"_id": ObjectId(lesson_id)})
         if not lesson:
             return jsonify({"message": "Lesson not found."}), 404
-        
+ 
         new_resource_id = None
-        if lesson_type:
-            old_resource_id = lesson.get("resource._id")
-
+        if lesson_type and lesson_type == "video":
+            old_resource_id = lesson.get("resource", [])[0]
             # Delete the old resource based on its type
             if old_resource_id:
                 resource_id_obj = ObjectId(old_resource_id)
                 if lesson["type"] == "scriptlesson":
                     db["script_lessons"].delete_one({"_id": resource_id_obj})
-                elif lesson["type"] == "testselection":
-                    db["testselection_lessons"].delete_one({"_id": resource_id_obj})
-                elif lesson["type"] == "video":
-                    db["video_lessons"].delete_one({"_id": resource_id_obj})
-
             # Create a new resource based on the new lesson type
             if lesson_type == "video":
-                response = create_video_lesson()
-            elif lesson_type == "testselection":
-                response = create_testselection_lesson()
-            elif lesson_type == "scriptlesson":
-                response = create_script_lesson()
-            else:
-                return jsonify({"message": f"Invalid lesson type: {lesson_type}"}), 400
-
+                response = create_video_lesson()   
             if response[1] == 201:
                 new_resource_id = response[0]
             else:
                 return response
-
+        resources_data = []
+        if new_resource_id:
+            resources_data.append(new_resource_id['id'])
         update_data = {}
         if title:
             update_data["title"] = title
@@ -239,9 +236,12 @@ def update_lesson(lesson_id):
             update_data["comments"] = comments
         if lesson_type:
             update_data["type"] = lesson_type
-        if new_resource_id:
-            update_data["resource"] = new_resource_id
+        if resources_data and lesson_type == "video":
+            update_data["resource"] = resources_data
+        if lesson_type == "testselection" and selection_ids is not None:
+            update_data["resource"] = selection_ids
 
+        
         # Update the lesson in the database
         result = lesson_collection.update_one(
             {"_id": ObjectId(lesson_id)},
