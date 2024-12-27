@@ -1,30 +1,46 @@
 from pymongo import MongoClient
+from flask import send_from_directory
 import os
 
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["backend"]
-teacher_collection = db["teachers"]
+user_collection = db["users"]
 
-
-class User:
+class Teacher:
     @staticmethod
     def find_by_id(id):
-        return teacher_collection.find_one({"_id": id})
+        return user_collection.find_one({"_id": id})
 
     @staticmethod
     def get_all_teacher():
-        teacher = teacher_collection.find()
+        teacher = user_collection.find()
         teacher_list = [doc for doc in teacher]
         for teacher in teacher_list:
             teacher["_id"] = str(teacher["_id"])
         return teacher_list
-    
+
     @staticmethod
-    def verify_teacher(teacher_id):
-        result = teacher_collection.update_one({'_id': teacher_id},{'isVerify' : True})
+    def get_all_course_from_teacher():
+        teacher = user_collection.find()
+        teacher_list = [doc for doc in teacher]
+        for teacher in teacher_list:
+            teacher["_id"] = str(teacher["_id"])
+        return teacher_list
+
+    @staticmethod
+    def verify_teacher(id):
+        result = user_collection.update_one({"_id": id}, {"isVerify": True})
         print(result.matched_count + " successfully updated")
+
+    @staticmethod
+    def delete_teacher(id):
+        result = user_collection.delete_one({"_id": id})
+        print(result.deleted_count + " successfully deleted")
         
     @staticmethod
-    def delete_teacher(teacher_id):
-        result = teacher_collection.delete_one({'_id': teacher_id})
-        print(result.deleted_count + " successfully deleted")
+    def get_teacher_request():
+        user = user_collection.find({"teacherVerifyRequest": True})
+        user_list = [doc for doc in user]
+        for user in user_list:
+            user["_id"] = str(user["_id"])
+        return user_list
