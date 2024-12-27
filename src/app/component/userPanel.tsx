@@ -2,10 +2,8 @@
 import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import userInfoCard from "./user_userInfo"
-import UserInfoCard from "./user_userInfo";
+import InfoCard from "./infoCard";
 import { Container } from "@mui/material";
 
 interface TabPanelProps {
@@ -67,7 +65,7 @@ export default function UserTabs() {
         <Tab label="Change information" {...a11yProps(2)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        <UserInfoCard/>
+        <InfoCard/>
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
