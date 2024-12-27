@@ -18,12 +18,12 @@ export default function QueryProviders({
               return toast("errororoororoor", { type: "error" });
             },
           },
-          // queries: {
-          //   refetchOnWindowFocus: false,
-          //   retry: 3,
-          //   staleTime: 1 * 60 * 100,
-          //   gcTime: 5 * 60 * 100,
-          // },
+          queries: {
+            refetchOnWindowFocus: false,
+            // retry: 3,
+            // staleTime: 1 * 60 * 100,
+            // gcTime: 5 * 60 * 100,
+          },
         },
       }),
   );

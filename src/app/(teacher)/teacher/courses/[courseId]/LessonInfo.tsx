@@ -24,11 +24,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateCourse } from "@/app/api/course";
 import { toast } from "react-toastify";
 import LessonDetail from "./LessonDetail";
+import { createLesson } from "@/app/api/lesson";
+import CustomDialog from "../components/CustomDialog";
 export default function LessonInfo({ course }: { course: ICourse }) {
   const lessonsRes = course?.lessonIds || [];
   const [lessons, setLessons] = useState<ILesson[]>([]);
   const queryClient = useQueryClient();
   const [lessonSlt, setLessonSlt] = useState("");
+
   const { mutate } = useMutation({
     mutationFn: (newCourseData: UpdateCoursePayload) => {
       return updateCourse(newCourseData);
@@ -36,6 +39,20 @@ export default function LessonInfo({ course }: { course: ICourse }) {
     onSuccess: () => {
       toast.success("Update course successfully!");
 
+      queryClient.invalidateQueries({
+        queryKey: ["course-detail"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error?.message || "Something went wrong"}`);
+    },
+  });
+  const { mutate: mutateCreateLesson } = useMutation({
+    mutationFn: (data: FormData) => {
+      return createLesson(data);
+    },
+    onSuccess: () => {
+      toast.success("Create lesson successfully!");
       queryClient.invalidateQueries({
         queryKey: ["course-detail"],
       });
@@ -71,6 +88,24 @@ export default function LessonInfo({ course }: { course: ICourse }) {
       },
     });
   };
+  const handleAddNewLesson = async () => {
+    const formData = new FormData();
+    formData.append("title", "temp");
+    formData.append("description", "temp");
+    formData.append("type", "testselection");
+    formData.append("duration", "20");
+    formData.append("course_id", course._id);
+
+    formData.append("question", "temp");
+    formData.append("explanation", "temp");
+    formData.append("answerA", "temp");
+    formData.append("answerB", "temp");
+    formData.append("answerC", "temp");
+    formData.append("answerD", "temp");
+    formData.append("correctAnswer", "A");
+
+    mutateCreateLesson(formData);
+  };
   useEffect(() => {
     if (lessonsRes) {
       setLessons(lessonsRes);
@@ -84,7 +119,9 @@ export default function LessonInfo({ course }: { course: ICourse }) {
           variant="contained"
           startIcon={<AddIcon />}
           sx={{ textTransform: "none" }}
-          onClick={() => {}}
+          onClick={() => {
+            handleAddNewLesson();
+          }}
           className=""
         >
           Add lesson
@@ -113,6 +150,7 @@ export default function LessonInfo({ course }: { course: ICourse }) {
         <div className="basis-[75%]">
           {lessonSlt && (
             <LessonDetail
+              setLessonSlt={setLessonSlt}
               lesson={{
                 ...lessons[
                   lessons.findIndex((lesson) => lesson._id === lessonSlt)

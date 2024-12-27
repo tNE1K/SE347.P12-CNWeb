@@ -12,19 +12,46 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import LessonResource, { ELessonType } from "./LessonResource";
+import CustomDialog from "../components/CustomDialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteLesson } from "@/app/api/lesson";
+import { toast } from "react-toastify";
 export interface UpdateLessonPayloadDto {
   title: string;
   description: string;
   type: string;
 }
-export default function LessonDetail({ lesson }: { lesson: ILesson }) {
+export default function LessonDetail({
+  lesson,
+  setLessonSlt,
+}: {
+  lesson: ILesson;
+  setLessonSlt: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const [lessonTitle, setLessonTitle] = useState("");
   const [error, setError] = useState("");
   const [lessonDescription, setLessonDescription] = useState("");
+  const [showDeleteLesson, setShowDeleteLesson] = useState(false);
   const [typeLesson, setTypeLesson] = useState<ELessonType>(ELessonType.Video);
   const [updatePayload, setUpdatePayload] = useState<
     UpdateLessonPayloadDto | undefined
   >(undefined);
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: (courseId: string) => {
+      return deleteLesson(courseId);
+    },
+    onSuccess: () => {
+      toast.success("Delete lesson successfully!");
+
+      queryClient.invalidateQueries({
+        queryKey: ["course-detail"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error?.message || "Something went wrong"}`);
+    },
+  });
   const handleChange = (event: SelectChangeEvent<ELessonType>) => {
     setTypeLesson(event.target.value as ELessonType);
   };
@@ -34,6 +61,10 @@ export default function LessonDetail({ lesson }: { lesson: ILesson }) {
       return true;
     }
     return false;
+  };
+  const handleDeleteLesson = () => {
+    mutate(lesson._id);
+    setLessonSlt("");
   };
   useEffect(() => {
     if (lesson) {
@@ -60,6 +91,20 @@ export default function LessonDetail({ lesson }: { lesson: ILesson }) {
 
   return (
     <div className="flex w-full flex-col space-y-4 rounded-md border-[1px] border-gray-300 p-7">
+      <div className="flex w-full justify-end">
+        <Button
+          variant="contained"
+          autoFocus
+          onClick={() => {
+            setShowDeleteLesson(true);
+          }}
+          color="error"
+          // onClick={handleSaveLesson}
+          className="my-4 w-[150px]"
+        >
+          Delete
+        </Button>
+      </div>
       <div className="flex flex-col">
         <TextField
           label="Lesson title"
@@ -119,6 +164,17 @@ export default function LessonDetail({ lesson }: { lesson: ILesson }) {
       >
         Save
       </Button> */}
+      <CustomDialog
+        open={showDeleteLesson}
+        onClose={() => {
+          setShowDeleteLesson(false);
+        }}
+        onYes={() => {
+          handleDeleteLesson();
+        }}
+        title="Are you sure want to delete this lesson"
+        desc="All resource in this lesson will be deleted"
+      />
     </div>
   );
 }
