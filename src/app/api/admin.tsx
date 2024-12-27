@@ -13,6 +13,19 @@ export const fetchAllUser = async () => {
   }
 };
 
+export const fetchAllTeacherRequest = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/admin/get_teacher_request", {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch teacher request data:", error);
+    localStorage.clear();
+    throw error;
+  }
+};
+
 export const findUser = async (token: any, str: string) => {
   try {
     const response = await axios.get("http://localhost:5000/admin/find_user", {
