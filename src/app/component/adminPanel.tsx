@@ -1,12 +1,13 @@
 "use client";
-import * as React from "react";
-import { useState } from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
 import UserDataTable from "@/app/component/admin_userDataTable";
 import { Container } from "@mui/material";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import * as React from "react";
+import { useState } from "react";
+import TeacherRequestTable from "./admin_teacherRequestTable";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -70,6 +71,7 @@ export default function AdminTabs() {
         <Tab label="Course management" {...a11yProps(0)} />
         <Tab label="User management" {...a11yProps(1)} />
         <Tab label="Statistic" {...a11yProps(2)} />
+        <Tab label="Teacher request" {...a11yProps(3)} />
       </Tabs>
       <TabPanel value={value} index={0}>
         Item One
@@ -82,6 +84,9 @@ export default function AdminTabs() {
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <TeacherRequestTable/>
       </TabPanel>
     </Box>
   );
