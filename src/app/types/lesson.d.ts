@@ -3,7 +3,7 @@ export interface ILesson {
   comments: string[];
   description: string;
   duration: number;
-  resource: IVideoLesson | IScriptLesson | ISelectionLesson;
+  resource: IVideoLesson[] | IScriptLesson[] | ISelectionLesson[];
   title: string;
   createdAt: string;
   type: "video" | "scriptlesson" | "testselection";

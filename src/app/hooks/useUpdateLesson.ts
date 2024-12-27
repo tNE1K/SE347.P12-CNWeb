@@ -14,9 +14,9 @@ const useUpdateLesson = () => {
     },
     onSuccess: () => {
       toast.success("Update lesson successfully!");
-      queryClient.invalidateQueries({
-        queryKey: ["course-detail"],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["course-detail"],
+      // });
     },
     onError: (error: any) => {
       toast.error(`Error: ${error?.message || "Something went wrong"}`);
