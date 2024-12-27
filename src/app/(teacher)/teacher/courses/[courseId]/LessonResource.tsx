@@ -46,7 +46,13 @@ function EditLessonResource({
     // case ELessonType.CodeScript:
     //   return <EditCodeScriptLesson {...res} />;
     case ELessonType.Selection:
-      return <EditSelectionLesson iniLesson={iniLesson} {...res} />;
+      return (
+        <EditSelectionLesson
+          updatePayload={updatePayload}
+          iniLesson={iniLesson}
+          {...res}
+        />
+      );
     default:
       return <></>;
   }
@@ -65,9 +71,8 @@ function EditVideoLesson({
 }) {
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const { mutate } = useUpdateLesson();
-  const videoSrcRef = useRef<string>(
-    (iniLesson?.resource[0] as IVideoLesson)?.file || "",
-  );
+  const [videoUrl, setVideoUrL] = useState("");
+  // (iniLesson?.resource[0] as IVideoLesson)?.file || "",
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleSaveLesson = async () => {
     const isError = validateInput();
@@ -94,20 +99,21 @@ function EditVideoLesson({
     const files = event.target.files;
 
     if (selectedVideo) {
-      URL.revokeObjectURL(videoSrcRef.current as string);
+      URL.revokeObjectURL(videoUrl);
     }
 
     if (files) {
       const file = files[0];
       setSelectedVideo(file);
-      videoSrcRef.current = URL.createObjectURL(file);
+      setVideoUrL(URL.createObjectURL(file));
     }
   };
   useEffect(() => {
+    console.log(iniLesson);
     if ((iniLesson?.resource[0] as IVideoLesson)?.file) {
-      videoSrcRef.current = (iniLesson?.resource[0] as IVideoLesson)?.file;
+      setVideoUrL((iniLesson?.resource[0] as IVideoLesson)?.file);
     }
-  }, [iniLesson, videoSrcRef]);
+  }, [iniLesson]);
   return (
     <div className="space-y-5 text-sm text-gray-500">
       <input
@@ -132,12 +138,8 @@ function EditVideoLesson({
         </div>
       )}
 
-      {videoSrcRef && (
-        <ReactPlayer
-          controls
-          url={videoSrcRef.current}
-          className="mx-auto aspect-video"
-        />
+      {videoUrl && (
+        <ReactPlayer controls url={videoUrl} className="mx-auto aspect-video" />
       )}
       <Button
         variant="contained"
@@ -159,13 +161,20 @@ const initialSelection = {
   answerD: "",
   correctAnswer: ESelectionAnswerChoiceList.A,
 };
-function EditSelectionLesson({ iniLesson }: { iniLesson: ILesson }) {
+function EditSelectionLesson({
+  iniLesson,
+  updatePayload,
+}: {
+  iniLesson: ILesson;
+  updatePayload: UpdateLessonPayloadDto;
+}) {
   const { mutate } = useUpdateLesson();
   const iniSelections = iniLesson?.resource || [];
   const onSave = async () => {
     const selectionIds = [];
     for (const selection of selections) {
       const formData = new FormData();
+
       formData.append("answerA", selection.answerA);
       formData.append("answerB", selection.answerB);
       formData.append("answerC", selection.answerC);
@@ -179,6 +188,9 @@ function EditSelectionLesson({ iniLesson }: { iniLesson: ILesson }) {
       selectionIds.push(response.id);
     }
     const form = new FormData();
+
+    form.append("title", updatePayload.title);
+    form.append("description", updatePayload.description);
     form.append("selectionIds", JSON.stringify(selectionIds));
     form.append("type", "testselection");
     mutate({
