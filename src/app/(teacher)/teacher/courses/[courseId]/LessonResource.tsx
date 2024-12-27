@@ -3,14 +3,17 @@
 import { ILesson, IVideoLesson } from "@/app/types/lesson";
 import AddIcon from "@mui/icons-material/Add";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import SaveAltOutlinedIcon from "@mui/icons-material/SaveAltOutlined";
 import Button from "@mui/material/Button";
 import { memo, useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
 import ReactPlayer from "react-player";
 import { UpdateLessonPayloadDto } from "./LessonDetail";
 import useUpdateLesson from "@/app/hooks/useUpdateLesson";
 import { uploadImage } from "@/app/api/course";
+import SelectionBox, {
+  ESelectionAnswerChoiceList,
+  TSelectionLessonResourse,
+} from "./SelectionBox";
+import { createTestSelections } from "@/app/api/lesson";
 
 export enum ELessonType {
   Video = "Video",
@@ -42,8 +45,8 @@ function EditLessonResource({
       );
     // case ELessonType.CodeScript:
     //   return <EditCodeScriptLesson {...res} />;
-    // case ELessonType.Selection:
-    //   return <EditSelectionLesson {...res} />;
+    case ELessonType.Selection:
+      return <EditSelectionLesson iniLesson={iniLesson} {...res} />;
     default:
       return <></>;
   }
@@ -63,7 +66,7 @@ function EditVideoLesson({
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const { mutate } = useUpdateLesson();
   const videoSrcRef = useRef<string>(
-    (iniLesson?.resource as IVideoLesson)?.file || "",
+    (iniLesson?.resource[0] as IVideoLesson)?.file || "",
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleSaveLesson = async () => {
@@ -101,8 +104,8 @@ function EditVideoLesson({
     }
   };
   useEffect(() => {
-    if ((iniLesson?.resource as IVideoLesson)?.file) {
-      videoSrcRef.current = (iniLesson?.resource as IVideoLesson)?.file;
+    if ((iniLesson?.resource[0] as IVideoLesson)?.file) {
+      videoSrcRef.current = (iniLesson?.resource[0] as IVideoLesson)?.file;
     }
   }, [iniLesson, videoSrcRef]);
   return (
@@ -147,7 +150,93 @@ function EditVideoLesson({
     </div>
   );
 }
+const initialSelection = {
+  question: "",
+  explanation: "",
+  answerA: "",
+  answerB: "",
+  answerC: "",
+  answerD: "",
+  correctAnswer: ESelectionAnswerChoiceList.A,
+};
+function EditSelectionLesson({ iniLesson }: { iniLesson: ILesson }) {
+  const { mutate } = useUpdateLesson();
+  const iniSelections = iniLesson?.resource || [];
+  const onSave = async () => {
+    const selectionIds = [];
+    for (const selection of selections) {
+      const formData = new FormData();
+      formData.append("answerA", selection.answerA);
+      formData.append("answerB", selection.answerB);
+      formData.append("answerC", selection.answerC);
+      formData.append("answerD", selection.answerD);
+      formData.append("correctAnswer", selection.correctAnswer);
+      formData.append("question", selection.question);
+      formData.append("explanation", selection.explanation as string);
+      // Append additional fields as needed
 
+      const response = await createTestSelections(formData);
+      selectionIds.push(response.id);
+    }
+    const form = new FormData();
+    form.append("selectionIds", JSON.stringify(selectionIds));
+    form.append("type", "testselection");
+    mutate({
+      lessonId: iniLesson._id,
+      data: form,
+    });
+  };
+  const [selections, setSelections] = useState<TSelectionLessonResourse[]>([]);
+  useEffect(() => {
+    if (iniSelections && iniSelections.length > 0) {
+      setSelections(iniSelections as TSelectionLessonResourse[]);
+    }
+  }, [iniSelections]);
+  return (
+    <div>
+      <div className="mb-5"></div>
+      <div className="space-y-4">
+        {selections.map((sl, idx) => (
+          <SelectionBox
+            key={idx + 1}
+            setSelections={setSelections}
+            {...sl}
+            clickDelete={() => {
+              const newSelections = selections.filter(
+                (sel, index) => idx !== index,
+              );
+              setSelections(newSelections);
+            }}
+            id={idx + 1}
+          />
+        ))}
+        <div className="flex w-full justify-center">
+          <Button
+            onClick={() => {
+              setSelections((prev) => [...prev, initialSelection]);
+            }}
+            color="inherit"
+            variant="outlined"
+            startIcon={<AddIcon />}
+            sx={{ textTransform: "none" }}
+          >
+            Add question
+          </Button>
+        </div>
+        <div className="w-full">
+          <Button
+            variant="contained"
+            size="small"
+            onClick={onSave}
+            className="w-full"
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 // function EditCodeScriptLesson({
 //   handleSubmit,
 //   prevInformation,
@@ -236,101 +325,6 @@ function EditVideoLesson({
 //             Save
 //           </Button>
 //         </LoadingButtonProvider>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function EditSelectionLesson({
-//   handleSubmit,
-//   prevInformation,
-//   isMutating,
-//   defaultData,
-// }: Omit<IEditLessonResource, "type">) {
-//   const [resource, setResource] = useState<
-//     Array<TSelectionLessonResourse & { id: string }>
-//   >([]);
-
-//   useEffect(() => {
-//     if (defaultData && Array.isArray(defaultData)) {
-//       setResource(
-//         (defaultData as TSelectionLessonResourse[]).map((item) => ({
-//           ...item,
-//           id: generateUUIDUsingMathRandom(),
-//         })),
-//       );
-//     }
-//   }, [defaultData]);
-
-//   const onSave = () => {
-//     handleSubmit(resource);
-//   };
-
-//   const isApproveTosubmit = resource.every(
-//     (question) =>
-//       !!question.answerA &&
-//       !!question.answerB &&
-//       !!question.answerC &&
-//       !!question.answerD &&
-//       !!question.correctAnswer &&
-//       !!question.question,
-//   );
-
-//   return (
-//     <div>
-//       <div className="mb-5">
-//         <LoadingButtonProvider className="w-fit" isLoading={isMutating}>
-//           <Button
-//             disabled={
-//               !prevInformation || resource.length === 0 || !isApproveTosubmit
-//             }
-//             variant="contained"
-//             size="small"
-//             onClick={onSave}
-//           >
-//             Save
-//           </Button>
-//         </LoadingButtonProvider>
-//       </div>
-//       <div className="space-y-4">
-//         {resource.map((item, index) => (
-//           <SelectionQuestion
-//             key={item.id}
-//             clickDelete={() =>
-//               setResource((prev) => deepClone(prev).splice(index, 1))
-//             }
-//             handleUpdateResouce={(data) => {
-//               setResource((prev) => {
-//                 const clone = deepClone(prev);
-//                 clone.splice(index, 1, { ...data, id: item.id });
-//                 return clone;
-//               });
-//             }}
-//             {...item}
-//             id={index + 1}
-//           />
-//         ))}
-
-//         <div className="flex w-full justify-center">
-//           <Button
-//             onClick={() =>
-//               setResource((prev) => {
-//                 const clone = deepClone(prev);
-//                 clone.push({
-//                   ...defaultSelectionQuestionResource,
-//                   id: generateUUIDUsingMathRandom(),
-//                 });
-//                 return clone;
-//               })
-//             }
-//             color="inherit"
-//             variant="outlined"
-//             startIcon={<AddIcon />}
-//             sx={{ textTransform: "none" }}
-//           >
-//             Add question
-//           </Button>
-//         </div>
 //       </div>
 //     </div>
 //   );

@@ -37,6 +37,9 @@ export default function LessonDetail({ lesson }: { lesson: ILesson }) {
   };
   useEffect(() => {
     if (lesson) {
+      if (lesson.type === "video") setTypeLesson(ELessonType.Video);
+      if (lesson.type === "testselection") setTypeLesson(ELessonType.Selection);
+      if (lesson.type === "scriptlesson") setTypeLesson(ELessonType.CodeScript);
       setLessonTitle(lesson.title);
       setLessonDescription(lesson.description);
     }
@@ -100,12 +103,14 @@ export default function LessonDetail({ lesson }: { lesson: ILesson }) {
         </FormControl>
       </div>
       <Divider />
-      <LessonResource
-        type={typeLesson}
-        iniLesson={lesson}
-        validateInput={validateInput}
-        updatePayload={updatePayload}
-      />
+      {updatePayload && (
+        <LessonResource
+          type={typeLesson}
+          iniLesson={lesson}
+          validateInput={validateInput}
+          updatePayload={updatePayload}
+        />
+      )}
       {/* <Button
         variant="contained"
         autoFocus
