@@ -3,13 +3,75 @@ import Rating from "@/app/(teacher)/components/RatingBar/Rating";
 import RatingPicker from "@/app/(teacher)/components/RatingBar/RatingPicker";
 import { IComment } from "@/app/types/comment";
 import { convertISOToDate } from "@/app/utils/coverter";
-import { Button, TextField } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
+  TextField,
+} from "@mui/material";
 import React, { useState } from "react";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-export default function CommentSection({ comments }: { comments: IComment[] }) {
-  const [rating, setRating] = useState(0);
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import {
+  createComment,
+  CreateCommentPayload,
+  getCommentsByLessonId,
+  replyComment,
+  ReplyCommentPayload,
+} from "@/app/api/comments";
+import { useAuth } from "@/app/component/authProvider";
+import { useParams } from "next/navigation";
+const LIMIT = 5;
 
+export default function CommentSection({ lessonId }: { lessonId: string }) {
+  const [rating, setRating] = useState(0);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState("-createdAt");
+  const [content, setContent] = useState("");
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: [
+      "comments",
+      { page: page, limit: LIMIT, lessonId: lessonId, orderBy: sortBy },
+    ],
+    queryFn: () => getCommentsByLessonId(page, LIMIT, lessonId, sortBy),
+  });
+  const comments = data?.data || [];
+  const totalPages = data?.pagination?.total_pages || 0;
+
+  const queryClient = useQueryClient();
+  const params = useParams<{ courseId: string }>();
+  const { mutate } = useMutation({
+    mutationFn: (payload: CreateCommentPayload) => {
+      return createComment(payload);
+    },
+    onSuccess: () => {
+      toast.success("Comment upload successfully!");
+      queryClient.invalidateQueries({
+        queryKey: ["comments"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error?.message || "Something went wrong"}`);
+    },
+  });
+  const handleAddComment = async () => {
+    if (!user?.id) return;
+    mutate({
+      user_id: user.id,
+      content: content,
+      rating: rating,
+      course_id: params.courseId,
+      lesson_id: lessonId,
+    });
+    setRating(0);
+    setContent("");
+  };
   return (
     <div>
       <div className="my-4 text-2xl font-bold">Comments</div>
@@ -27,17 +89,40 @@ export default function CommentSection({ comments }: { comments: IComment[] }) {
             label="Enter comment"
             variant="outlined"
             fullWidth
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             multiline={true}
             rows={3}
           />
         </div>
       </div>
       <div className="mt-2 flex justify-end">
-        <Button variant="contained" autoFocus className="">
+        <Button
+          onClick={() => handleAddComment()}
+          variant="contained"
+          autoFocus
+          className=""
+        >
           Comments
         </Button>
       </div>
       <div className="my-4 h-[0.5px] w-full bg-gray-400"></div>
+      <div className="my-4 flex justify-end">
+        <FormControl size="small">
+          <InputLabel id="demo-simple-select-label">Sort by</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={sortBy}
+            label="Sort by"
+            onChange={(v) => setSortBy(v.target.value)}
+          >
+            <MenuItem value={"-createdAt"}>Newest</MenuItem>
+            <MenuItem value={"createdAt"}>Oldest</MenuItem>
+            <MenuItem value={"rating"}>Top Rating</MenuItem>
+          </Select>
+        </FormControl>
+      </div>
       <div className="flex flex-col gap-2">
         {comments.map((comment, idx) => (
           <CommentRow key={idx} comment={comment} />
@@ -48,12 +133,55 @@ export default function CommentSection({ comments }: { comments: IComment[] }) {
           </div>
         )}
       </div>
+      <div className="mt-8 flex justify-center">
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => {
+            setPage(value);
+          }}
+          variant="outlined"
+          color="primary"
+        />
+      </div>
     </div>
   );
 }
 export const CommentRow = ({ comment }: { comment: IComment }) => {
   const [showReplies, setShowReplies] = useState(false);
+  const [showInputReply, setShowInputReply] = useState(false);
+  const [content, setContent] = useState("");
+  const queryClient = useQueryClient();
   const replies = comment?.replyIds || [];
+  const { user } = useAuth();
+  const { mutate } = useMutation({
+    mutationFn: (payload: ReplyCommentPayload) => {
+      return replyComment(payload);
+    },
+    onSuccess: () => {
+      toast.success("Reply comment successfully!");
+      queryClient.invalidateQueries({
+        queryKey: ["comments"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error?.message || "Something went wrong"}`);
+    },
+  });
+  const handleReplyCommment = async (commentId: string) => {
+    // TODO HANDLE ERROROROROROROROR
+    if (!user?.id || content.trim() === "") return;
+    mutate({
+      comment_id: commentId,
+      data: {
+        content: content,
+        user_id: user.id,
+      },
+    });
+    setShowInputReply(false);
+    setShowReplies(true);
+    setContent("");
+  };
   return (
     <div>
       <div className="flex gap-4">
@@ -76,6 +204,12 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
             <div className="flex items-center gap-2">
               <p className="text-xs text-gray-500">
                 {convertISOToDate(comment.createdAt)}
+              </p>
+              <p
+                onClick={() => setShowInputReply(true)}
+                className="cursor-pointer text-xs text-gray-500 underline"
+              >
+                Reply
               </p>
             </div>
           </div>
@@ -104,6 +238,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
               })}
             </div>
           )}
+
           {comment.replyIds.length > 0 && (
             <div
               onClick={() => setShowReplies((prev) => !prev)}
@@ -115,6 +250,30 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
               ) : (
                 <ArrowDownwardIcon className="text-sm" />
               )}
+            </div>
+          )}
+          {showInputReply && (
+            <div className="p-2">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Reply now..."
+                className="my-2 mb-0 w-full rounded-md border-[1px] px-2 py-2"
+              />
+              <div className="flex justify-end gap-4">
+                <div
+                  onClick={() => setShowInputReply(false)}
+                  className="cursor-pointer rounded-md bg-gray-300 px-4 py-2 text-sm text-black transition-all hover:bg-gray-400"
+                >
+                  Cancel
+                </div>
+                <div
+                  onClick={() => handleReplyCommment(comment._id)}
+                  className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm text-white transition-all hover:bg-blue-700"
+                >
+                  Reply now
+                </div>
+              </div>
             </div>
           )}
         </div>

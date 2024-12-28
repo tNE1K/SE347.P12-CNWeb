@@ -1,10 +1,19 @@
 "use client";
-import { logIn as loginApi, logOut as logoutApi, signUp as signupApi } from "@/app/api/auth";
+import {
+  logIn as loginApi,
+  logOut as logoutApi,
+  signUp as signupApi,
+} from "@/app/api/auth";
 import { fetchInfo } from "@/app/api/user";
 import { User } from "@/app/types/user";
 import { useRouter } from "next/navigation";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -51,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push(response.role === "admin" ? "/admin" : "/");
       }
     } catch (error: any) {
-      alert(error)
+      alert(error);
     }
   };
 
