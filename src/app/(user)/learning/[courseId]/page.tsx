@@ -29,7 +29,7 @@ export default function page() {
     }
   }, [course, lessonIdx]);
   return (
-    <div className="relative flex">
+    <div className="flex">
       <div className="flex-1">
         {lessons && <LessonViewer lesson={lessons[lessonSlt]} />}
         {lessons && <LessonInfo lesson={lessons[lessonSlt]} />}
