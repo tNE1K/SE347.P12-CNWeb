@@ -151,6 +151,8 @@ def create_lesson():
             "type": lesson_type,
             "duration": int(duration),
             "resource": resourceIds,
+            "rating": 0,
+            "numberRatings": 0,
             "comments": [],
             "createdAt": datetime.now().isoformat()
         }

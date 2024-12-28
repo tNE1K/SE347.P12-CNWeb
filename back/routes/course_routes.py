@@ -145,6 +145,7 @@ def create_course():
             "participantsId":[],
             "lessonIds": [],
             "comments": [],
+            "numberRatings": 0,
             "status": status,
             "label": label,
             "createdAt": datetime.now().isoformat()
