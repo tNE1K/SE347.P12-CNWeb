@@ -41,13 +41,12 @@ class Comment:
                         "user_id": 1,
                         "content": 1,
                         "rating": 1,
-                        "numberLike": 1,
-                        "numberDisLike": 1,
                         "isReply": 1,
                         "replyIds": 1,
                         "createdAt": 1,
                         "user_info.fullName": 1,  
                         "user_info.email": 1,  
+                        "user_info.avatar" : 1
                     }
                 }
             ]

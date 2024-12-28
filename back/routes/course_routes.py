@@ -36,7 +36,7 @@ def get_all_course():
         page = request.args.get('page', default=1, type=int)  
         limit = request.args.get('limit', default=10, type=int) 
         order = request.args.get('order', default='createdAt')
-        if not order.strip():  # This will handle both empty strings and strings with only spaces
+        if not order.strip():  
             order = 'createdAt'
         valid_sort_fields = {"createdAt", "title", "-createdAt", "-title","rating","-rating"}
 

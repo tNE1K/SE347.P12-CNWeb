@@ -32,7 +32,7 @@ def parse_json(data):
         # Return the value as is if it's not an ObjectId
         return data
 
-@comments_blueprint.route('/', methods=['POST'])
+@comments_blueprint.route('/upload', methods=['POST'])
 def create_comments():
     try:
         data = request.json
@@ -51,13 +51,10 @@ def create_comments():
             "user_id": user_id,
             "content": content,
             "rating": rating,
-            "numberLike": 0,
-            "numberDisLike": 0,
             "isReply": False,
             "replyIds": [],
             "createdAt": datetime.utcnow()
         }
-        
         comment_id = comments_collection.insert_one(comment).inserted_id
         if lesson_id:
             lesson = lessons_collection.find_one({"_id": ObjectId(lesson_id)})
@@ -71,12 +68,13 @@ def create_comments():
             )
 
             # Recalculate average rating and update
-            all_ratings = list(comments_collection.find({"lesson_id": lesson_id}, {"rating": 1}))
+            all_ratings = list(comments_collection.find({"lesson_id": lesson_id, "isReply": False}, {"rating": 1}))
             avg_rating = sum(c["rating"] for c in all_ratings) / len(all_ratings)
             lessons_collection.update_one(
                 {"_id": ObjectId(lesson_id)},
                 {"$set": {"rating": avg_rating, "numberRatings": len(all_ratings)}}
             )
+            
         if course_id:
             course = courses_collection.find_one({"_id": ObjectId(course_id)})
             if not course:
@@ -89,7 +87,7 @@ def create_comments():
             )
 
             # Recalculate average rating and update
-            all_ratings = list(comments_collection.find({"course_id": course_id}, {"rating": 1}))
+            all_ratings = list(comments_collection.find({"course_id": course_id, "isReply": False}, {"rating": 1}))
             avg_rating = sum(c["rating"] for c in all_ratings) / len(all_ratings)
             courses_collection.update_one(
                 {"_id": ObjectId(course_id)},
@@ -138,10 +136,22 @@ def get_comments_by_lesson(lesson_id):
         # Get pagination parameters
         page = int(request.args.get("page", 1))
         limit = int(request.args.get("limit", 10))
+        order = request.args.get('order', default='createdAt')
+        if not order.strip():  
+            order = 'createdAt'
+        valid_sort_fields = {"createdAt", "-createdAt", "rating","-rating"}
 
+        # Check if order is valid
+        if not order or order not in valid_sort_fields:
+            return jsonify({"message": f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"}), 400
+        sort_field = order.lstrip('-')  
+        sort_direction = -1 if order.startswith('-') else 1 
+
+        
         # Create the aggregation pipeline
         pipeline = [
-            {"$match": {"lesson_id": lesson_id}},  # Match comments by lesson_id
+            {"$match": {"lesson_id": lesson_id, "isReply": False}}, 
+            {"$sort" : { sort_field : sort_direction } },
             {"$skip": (page - 1) * limit},  # Pagination: Skip the documents for the current page
             {"$limit": limit},  # Limit the number of documents to the specified limit
             {
@@ -166,13 +176,12 @@ def get_comments_by_lesson(lesson_id):
                     "user_id": 1,
                     "content": 1,
                     "rating": 1,
-                    "numberLike": 1,
-                    "numberDisLike": 1,
                     "isReply": 1,
                     "replyIds": 1,
                     "createdAt": 1,
                     "user_info.fullName": 1,
-                    "user_info.email": 1
+                    "user_info.email": 1,
+                    "user_info.avatar" : 1
                 }
             }
         ]
@@ -240,8 +249,6 @@ def reply_comment(comment_id):
             "user_id": user_id,
             "content": content,
             "rating": None,  # No rating for replies
-            "numberLike": 0,
-            "numberDisLike": 0,
             "isReply": True,
             "replyIds": [],
             "createdAt": datetime.utcnow()
