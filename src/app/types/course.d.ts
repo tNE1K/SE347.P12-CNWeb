@@ -12,6 +12,8 @@ export interface ICourse {
   status: "publish" | "hide";
   title: string;
   createdAt: string;
+  rating: number;
+  numberRatings: number;
 }
 export interface UpdateCoursePayload {
   courseId: string;

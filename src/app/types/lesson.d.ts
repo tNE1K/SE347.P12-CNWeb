@@ -7,6 +7,8 @@ export interface ILesson {
   title: string;
   createdAt: string;
   type: "video" | "scriptlesson" | "testselection";
+  rating: number;
+  numberRatings: number;
 }
 export interface IVideoLesson {
   _id: string;
