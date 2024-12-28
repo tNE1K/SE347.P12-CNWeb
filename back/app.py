@@ -15,8 +15,8 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
-
+# CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+CORS(app, supports_credentials=True, origins=["http://localhost:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
 app.register_blueprint(user_blueprint, url_prefix="/user")
