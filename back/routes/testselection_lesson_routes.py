@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
+from bson import ObjectId
 import os
 # Blueprint definition
 testselection_lesson_blueprint = Blueprint('testselection_lesson', __name__)
@@ -36,3 +37,27 @@ def create_testselection_lesson():
         return {"id": str(result.inserted_id)}, 201
     except Exception as e:
         return jsonify({"message": "Error creating testselection lesson", "error": str(e)}), 500
+@testselection_lesson_blueprint.route('/answer/<test_selection_id>', methods=['POST'])
+def submit_answer(test_selection_id):
+    try:
+        data = request.json
+        # Get the answer from the request
+        user_answer = data.get("answer")  # Expecting "A", "B", "C", or "D"
+        # Fetch the lesson from the database
+        test_selection = testselection_lesson_collection.find_one({"_id": ObjectId(test_selection_id)})
+
+        if not test_selection:
+            return jsonify({"message": "Test Selection not found."}), 404
+        print("-----------------------------------------")
+        print(test_selection)
+        print(user_answer)
+        # Check if the answer is correct
+        is_correct = user_answer == test_selection['correctAnswer']
+        # Return a response
+        return jsonify({
+            "message": "Answer submitted successfully.",
+            "is_correct": is_correct
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": "Error submitting answer", "error": str(e)}), 500
