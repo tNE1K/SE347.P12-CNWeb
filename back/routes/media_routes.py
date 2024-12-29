@@ -25,6 +25,7 @@ ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'webm'}
 def allowed_file(filename, allowed_extensions):
     """Check if the file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+bunny_cdn_base_url = "https://se347video.b-cdn.net"
 
 @media_blueprint.route('/uploadImage', methods=['POST'])
 def upload_image():
@@ -60,7 +61,8 @@ def upload_image():
 
         # Get the URL of the uploaded file
         file_url = blob_client.url
-
+        if allowed_file(filename, ALLOWED_VIDEO_EXTENSIONS):
+            file_url = f"{bunny_cdn_base_url}/{filename}"
 
         return jsonify({"message": "File uploaded successfully", "file_url": file_url}), 200
 
