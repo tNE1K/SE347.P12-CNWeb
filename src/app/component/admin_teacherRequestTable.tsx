@@ -4,11 +4,34 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const handleAccept = (id: string) => {
+    // Implement the logic to accept the teacher request
+    console.log("Accepted:", id);
+    // Add your acceptance logic here (e.g., API call)
+  };
+
+const handleDecline = (id: string) => {
+    // Implement the logic to decline the teacher request
+    console.log("Declined:", id);
+    // Add your decline logic here (e.g., API call)
+  };
+
 const columns: GridColDef[] = [
   { field: "index", headerName: "Index", width: 200 },
   { field: "_id", headerName: "ID", width: 200 },
   { field: "email", headerName: "Email", width: 250 },
   { field: "role", headerName: "Role", width: 150 },
+  {
+    field: "actions",
+    headerName: "Actions",
+    width: 200,
+    renderCell: (params) => (
+      <div>
+        <button onClick={() => handleAccept(params.row._id)}>Accept</button>
+        <button onClick={() => handleDecline(params.row._id)}>Decline</button>
+      </div>
+    ),
+  },
 ];
 
 export default function TeacherRequestTable() {
