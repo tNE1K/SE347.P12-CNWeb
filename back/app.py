@@ -9,14 +9,19 @@ from routes.payment_routes import payment_blueprint
 from routes.teacher_routes import teacher_blueprint
 from routes.comment_routes import comments_blueprint
 from routes.media_routes import media_blueprint
-# from routes.upload_routes import upload_blueprint
+from routes.chat_routes import chat_blueprint, setup_socketio
+
 from config import Config
 from flask_cors import CORS
+from flask_socketio import SocketIO
+import eventlet
 
 app = Flask(__name__)
 app.config.from_object(Config)
-# CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
+socketio = SocketIO(app, cors_allowed_origins="*", cors_credentials=True)
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
 app.register_blueprint(user_blueprint, url_prefix="/user")
@@ -28,7 +33,9 @@ app.register_blueprint(payment_blueprint, url_prefix="/payment")
 app.register_blueprint(teacher_blueprint, url_prefix="/teacher")
 app.register_blueprint(comments_blueprint, url_prefix="/comment")
 app.register_blueprint(media_blueprint, url_prefix="/media")
-# app.register_blueprint(upload_blueprint, url_prefix='/upload')
+app.register_blueprint(chat_blueprint, url_prefix="/chat")
+
+setup_socketio(socketio)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True)
