@@ -7,7 +7,6 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["backend"]
 user_collection = db["users"]
 
-
 class User:
     @staticmethod
     def find_by_email(email):
@@ -15,7 +14,18 @@ class User:
 
     @staticmethod
     def find_by_id(id):
-        return user_collection.find_one({"_id": id})
+        return user_collection.find_one({"_id": ObjectId(id)})
+
+    @staticmethod
+    def insert_user(user):
+        user_collection.insert_one(user)
+
+    @staticmethod
+    def get_all_user():
+        users = user_collection.find()
+        return [
+            {**user, "_id": str(user["_id"])} for user in users
+        ]
 
     @staticmethod
     def set_verify_token(email, token):
@@ -25,11 +35,9 @@ class User:
 
     @staticmethod
     def check_verify_token(email):
-        user = user_collection.find_one(
-            {"email": email}, {"email_verify_token": 1, "_id": 0}
-        )
-        token = user["email_verify_token"]
-        return is_token_expired(token)
+        user = user_collection.find_one({"email": email}, {"email_verify_token": 1, "_id": 0})
+        token = user.get("email_verify_token")
+        return is_token_expired(token) if token else True
 
     @staticmethod
     def del_verify_token(email):
@@ -38,23 +46,23 @@ class User:
         )
 
     @staticmethod
-    def get_all_user():
-        users = user_collection.find()
-        users_list = [doc for doc in users]
-        for user in users_list:
-            user["_id"] = str(user["_id"])
-        return users_list
+    def update_user_first_name(email, first_name):
+        return User._update_user_field(email, "firstName", first_name)
 
     @staticmethod
-    def insert_user(user):
-        user_collection.insert_one(user)
+    def update_user_last_name(email, last_name):
+        return User._update_user_field(email, "lastName", last_name)
 
     @staticmethod
-    def update_user_field(email, update_data):
-        return user_collection.update_one({"email": email}, {"$set": update_data})
-    
+    def update_user_birthday(email, birthday):
+        return User._update_user_field(email, "birthday", birthday)
+
     @staticmethod
     def set_verify_request(id):
         return user_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": True}}
         )
+
+    @staticmethod
+    def _update_user_field(email, field, value):
+        return user_collection.update_one({"email": email}, {"$set": {field: value}})
