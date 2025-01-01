@@ -9,7 +9,7 @@ import request from "./request";
 
 export const getAllCourse = (
   page: string | number = 1,
-  limit: string | number = 10,
+  limit: string | number = 10, //check var!
   sortBy: string | "",
   keyword: string = "",
   rating: number = 0,
