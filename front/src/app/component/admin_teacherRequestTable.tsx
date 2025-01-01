@@ -1,19 +1,36 @@
 import { fetchAllTeacherRequest } from "@/app/api/admin";
 import { Button, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import axios from 'axios';
 import { useEffect, useState } from "react";
 
-const handleAccept = (id: string) => {
-    // Implement the logic to accept the teacher request
-    console.log("Accepted:", id);
-    // Add your acceptance logic here (e.g., API call)
-  };
+const handleAccept = async (id: string) => {
+  console.log("Test:", id);
+  try {
+    const response = await axios.post('http://localhost:5000/admin/accept_teacher', 
+            { _id: id },  // Pass the correct property named "_id"
+            { withCredentials: true }  // Move `withCredentials` here
+    );
+    console.log('Accepted:', response.data);
+  } catch (error) {
+    console.error('Error accepting request:', error);
+  }
+};
 
-const handleDecline = (id: string) => {
-    // Implement the logic to decline the teacher request
-    console.log("Declined:", id);
-    // Add your decline logic here (e.g., API call)
-  };
+
+const handleDecline = async (id: string) => {
+  console.log("Test:", id);
+  try {
+    const response = await axios.post('http://localhost:5000/admin/decline_teacher',
+      { _id: id },  // Pass the correct property named "_id"
+      { withCredentials: true }  // Move `withCredentials` here
+    );
+
+    console.log('Declined:', response.data);
+  } catch (error) {
+    console.error('Error accepting request:', error);
+  }
+};
 
 const columns: GridColDef[] = [
   { field: "index", headerName: "Index", width: 200 },

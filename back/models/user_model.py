@@ -70,3 +70,9 @@ class User:
         return user_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": True}}
         )
+        
+    @staticmethod
+    def decline_verify_request(id):
+        return user_collection.update_one(
+            {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": False}}
+        )
