@@ -1,7 +1,6 @@
 import { fetchAllTeacherRequest } from "@/app/api/admin";
-import { Paper } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const handleAccept = (id: string) => {
@@ -27,8 +26,8 @@ const columns: GridColDef[] = [
     width: 200,
     renderCell: (params) => (
       <div>
-        <button onClick={() => handleAccept(params.row._id)}>Accept</button>
-        <button onClick={() => handleDecline(params.row._id)}>Decline</button>
+        <Button onClick={() => handleAccept(params.row._id)}>Accept</Button>
+        <Button onClick={() => handleDecline(params.row._id)}>Decline</Button>
       </div>
     ),
   },
@@ -37,12 +36,6 @@ const columns: GridColDef[] = [
 export default function TeacherRequestTable() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  const onRowClickHandler = (params: any) => {
-    const id = params.row._id;
-    router.push(`/teacherRequest/${id}`);
-  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -72,7 +65,6 @@ export default function TeacherRequestTable() {
         columns={columns}
         loading={loading}
         pageSizeOptions={[5, 10]}
-        onRowClick={onRowClickHandler}
         sx={{ border: 0 }}
       />
     </Paper>
