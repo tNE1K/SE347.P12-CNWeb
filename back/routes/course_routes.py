@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 
 from models.lesson_model import Lesson
+from models.course_model import Course
 import os
 import json 
 course_blueprint = Blueprint('course', __name__)
@@ -32,44 +33,31 @@ def parse_json(data):
 @course_blueprint.route('/', methods=['GET'])
 def get_all_course():
     try:
-
         page = request.args.get('page', default=1, type=int)  
         limit = request.args.get('limit', default=10, type=int) 
         order = request.args.get('order', default='createdAt')
-        if not order.strip():  
-            order = 'createdAt'
-        valid_sort_fields = {"createdAt", "title", "-createdAt", "-title","rating","-rating"}
+        keyword = request.args.get('keyword', default='').strip()
+        rating = request.args.get('rating', default=0, type=int)
+        label = request.args.get('label', default='').strip()
+        priceFrom = request.args.get('priceFrom', default=0, type=int)
+        priceTo = request.args.get('priceTo', default=10000000, type=int)
+        teacher_id = request.args.get('teacher_id', default='').strip()
 
-        # Check if order is valid
+        # Validate order
+        valid_sort_fields = {"createdAt", "title", "-createdAt", "-title", "rating", "-rating","price","-price"}
         if not order or order not in valid_sort_fields:
             return jsonify({"message": f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"}), 400
-        
 
-        sort_field = order.lstrip('-')  
-        sort_direction = -1 if order.startswith('-') else 1 
-        if page < 1 or limit < 1:
-            return jsonify({"message": "Page and limit must be positive integers."}), 400
-
-        skip = (page - 1) * limit
-        courses_cursor = courses_collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
-        courses = list(courses_cursor)  
-
-        total_courses = courses_collection.count_documents({})
-        total_pages = (total_courses + limit - 1) // limit  
-
-        for course in courses:
-            lesson_data = []
-            for lesson_id in course.get("lessonIds", []):
-                lesson, error = Lesson.get_one(lesson_id)
-                if lesson:
-                    lesson_data.append(lesson)
-                
-            course["lessonIds"] = lesson_data
-        courses = [parse_json(course) for course in courses]
-
+        # Fetch courses using the Course model's get_all method
+        courses, total_courses, total_pages = Course.get_all(
+            page, limit, order, keyword, rating, label, priceFrom, priceTo,teacher_id
+        )
+        if courses is None:
+            return jsonify({"message": total_courses}), 400  
+    
         return jsonify({
             "status": "success",
-            "data": courses,
+            "data": parse_json(courses),
             "pagination": {
                 "page": page,
                 "limit": limit,
@@ -79,28 +67,16 @@ def get_all_course():
             "message": "Courses fetched successfully!"
         }), 200
     except Exception as e:
-        return jsonify({"message": "Error creating course", "error": str(e)}), 500
+        return jsonify({"message": "Error fetching courses", "error": str(e)}), 500
 
 @course_blueprint.route('/<course_id>', methods=['GET'])
 def get_course_by_id(course_id):
     try:
-        if not course_id:
-            return jsonify({"message": "Invalid course id."}), 400
-        
-        course = courses_collection.find_one({"_id": ObjectId(course_id)})
-        if not course:
-            return jsonify({"message": "Course not found."}), 404
-        
-        lesson_data = []
-        for lesson_id in course.get("lessonIds", []):
-            lesson, error = Lesson.get_one(lesson_id)
-            if lesson:
-                lesson_data.append(lesson)
-            # elif error:
-            #     lesson_data.append({"lesson_id": lesson_id, "error": error})
+        course, error = Course.get_one(course_id)
+        if error:
+            return jsonify({"message": error}), 400
 
-        course["lessonIds"] = lesson_data
-        course = parse_json(course)
+        course = parse_json(course)  # Assuming parse_json is a function to serialize MongoDB data
 
         return jsonify({
             "status": "success",
@@ -119,6 +95,8 @@ def create_course():
         cover_url = request.form.get('cover')  # If cover is a URL, it's part of form-data
         status = request.form.get('status')  # publish | hide
         label = request.form.get('label')
+        price = request.form.get('price')
+        teacher_id = request.form.get('teacher_id')
 
         # If the cover is a file instead of a URL
         if 'cover' in request.files:
@@ -132,8 +110,8 @@ def create_course():
             return jsonify({"message": "Invalid JSON format for label."}), 400
         
 
-        if not title:
-            return jsonify({"message": "Title is required."}), 400
+        if not title or not teacher_id:
+            return jsonify({"message": "Title and teacher_id is required."}), 400
         if status not in ["publish", "hide"]:
             return jsonify({"message": "Invalid status. Allowed values are 'publish' or 'hide'."}), 400
 
@@ -148,6 +126,8 @@ def create_course():
             "numberRatings": 0,
             "status": status,
             "label": label,
+            "price": int(price),
+            "teacher_id" : teacher_id,
             "createdAt": datetime.now().isoformat()
         }
 
@@ -166,6 +146,7 @@ def update_course(course_id):
         status = data.get('status')
         label = data.get('label')  
         cover = data.get('cover')  
+        price = data.get('price')  
         lessonIds = data.get('lessonIds')  
 
 
@@ -186,6 +167,8 @@ def update_course(course_id):
             update_data["label"] = label
         if cover: 
             update_data["cover"] = cover
+        if price: 
+            update_data["price"] = price
         if lessonIds: 
             update_data["lessonIds"] = lessonIds
         result = courses_collection.update_one(
@@ -229,3 +212,58 @@ def delete_course(course_id):
 
     except Exception as e:
         return jsonify({"message": "Error deleting course", "error": str(e)}), 500
+@course_blueprint.route('/get-user-count-stats/<teacher_id>', methods=['GET'])
+def get_user_count_stats(teacher_id):
+    try:
+        courses, total_courses, total_pages = Course.get_all(
+            1, 10000, "createdAt", "", 0, "", 0 , 10000000, teacher_id
+        )    
+        course_stats = []   
+        unique_users = set()
+        for course in courses:
+            unique_users.update(course.get("participantsId", []))
+
+            course_stats.append({
+                "name": course["title"],
+                "numberEnroll": len(course.get("participantsId", []))
+            })
+        total_unique_users = len(unique_users)
+        return jsonify({
+            "status": "success",
+            "data": course_stats,
+            "totalUniqueUsersEnroll": total_unique_users,
+            "message": "Course stats fetched successfully!"
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": "Error retrieving data", "error": str(e)}), 500
+@course_blueprint.route('/get-course-count-stats/<teacher_id>', methods=['GET'])
+def get_course_count_stats(teacher_id):
+    try:
+        # Fetch courses for the given teacher
+        courses, total_courses, total_pages = Course.get_all(
+            1, 10000, "createdAt", "", 0, "", 0 , 10000000, teacher_id
+        )
+        
+        # Initialize a dictionary to store the count of courses by label
+        label_count = {}
+
+        # Iterate through the courses and count the labels
+        for course in courses:
+            for label in course.get("label", []):
+                if label not in label_count:
+                    label_count[label] = 0
+                label_count[label] += 1
+        
+        # Convert the label_count dictionary to a list of dictionaries in the required format
+        course_stats = [{"label": label, "numberCourse": count} for label, count in label_count.items()]
+
+        return jsonify({
+            "status": "success",
+            "data": course_stats,
+            "message": "Course stats fetched successfully!",
+            "totalCourses" : total_courses
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": "Error retrieving data", "error": str(e)}), 500

@@ -1,5 +1,4 @@
 import { ILesson } from "./lesson";
-
 export interface ICourse {
   _id: string;
   comments: string[];
@@ -13,6 +12,7 @@ export interface ICourse {
   title: string;
   createdAt: string;
   rating: number;
+  price: number;
   numberRatings: number;
 }
 export interface UpdateCoursePayload {
@@ -24,5 +24,34 @@ export interface UpdateCoursePayload {
     label?: string[];
     cover?: string;
     lessonIds?: string[];
+    price?: number;
   };
+}
+export interface SearchCourseParams {
+  page: number;
+  limit: number;
+  order: string;
+  keyword: string;
+  rating: number;
+  label: string;
+  priceFrom: number;
+  priceTo: number;
+}
+export interface UserEnrollCourseCount {
+  data: {
+    name: string;
+    numberEnroll: number;
+  }[];
+  message: string;
+  status: string;
+  totalUniqueUsersEnroll: number;
+}
+export interface CourseCount {
+  data: {
+    label: string;
+    numberCourse: number;
+  }[];
+  message: string;
+  status: string;
+  totalCourses: number;
 }

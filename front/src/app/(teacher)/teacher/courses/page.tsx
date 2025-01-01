@@ -16,18 +16,26 @@ import { Pagination } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Link from "next/link";
+import { useAuth } from "@/app/component/authProvider";
 const LIMIT = 4;
+function formatToVND(amount: number): string {
+  return `${amount.toLocaleString("vi-VN")} đ`;
+}
+
 export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("-createdAt");
+  const { user } = useAuth();
   const { data } = useQuery({
     queryKey: ["courses", { page: page, limit: LIMIT, order: sortBy }],
-    queryFn: () => getAllCourse(page, LIMIT, sortBy),
+    queryFn: () =>
+      getAllCourse(page, LIMIT, sortBy, "", 0, "", 0, 10000000, user?.id),
+    enabled: !!user?.id,
   });
   const courses = data?.data || [];
   const totalPages = data?.pagination?.total_pages;
   return (
-    <div className="h-[2000px] px-6">
+    <div className="min-h-[120vh] px-6">
       <div className="flex items-center justify-between">
         <div className="my-4 text-lg font-bold">Course List</div>
         <AddCourseButton />
@@ -39,7 +47,7 @@ export default function CoursesPage() {
               <TableCell sx={{ width: "5%" }} align="center">
                 No
               </TableCell>
-              <TableCell sx={{ width: "40%" }} align="left">
+              <TableCell sx={{ width: "30%" }} align="left">
                 <div
                   className="flex cursor-pointer items-center gap-2"
                   onClick={() =>
@@ -91,6 +99,22 @@ export default function CoursesPage() {
                 </div>
               </TableCell>
               <TableCell sx={{ width: "10%" }} align="center">
+                <div
+                  className="flex cursor-pointer items-center justify-center gap-1"
+                  onClick={() =>
+                    setSortBy((prev) => {
+                      if (prev === "price") {
+                        return "-price";
+                      } else return "price";
+                    })
+                  }
+                >
+                  <p>Price</p>
+                  {sortBy === "price" && <ExpandMoreIcon />}
+                  {sortBy === "-price" && <ExpandLessIcon />}
+                </div>
+              </TableCell>
+              <TableCell sx={{ width: "10%" }} align="center">
                 Detail
               </TableCell>
             </TableRow>
@@ -119,7 +143,12 @@ export default function CoursesPage() {
                 <TableCell align="center">
                   {convertISOToDate(course.createdAt)}
                 </TableCell>
-                <TableCell align="center">{course.rating}/5</TableCell>
+                <TableCell align="center">
+                  {course.rating.toFixed(1)}/5
+                </TableCell>
+                <TableCell align="center">
+                  {formatToVND(course.price)}
+                </TableCell>
                 <TableCell align="center">
                   <Link href={`/teacher/courses/${course._id}`}>
                     <OpenInNewIcon className="cursor-pointer" />

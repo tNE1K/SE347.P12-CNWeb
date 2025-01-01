@@ -61,7 +61,7 @@ export default function page() {
               parentClass="text-sm"
             />
             <p className="text-sm font-semibold text-gray-400">
-              {course.rating} / 5
+              {course.rating.toFixed(1)} / 5
             </p>
           </div>
           <Button
