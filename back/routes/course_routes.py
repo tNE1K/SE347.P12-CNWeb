@@ -68,7 +68,32 @@ def get_all_course():
         }), 200
     except Exception as e:
         return jsonify({"message": "Error fetching courses", "error": str(e)}), 500
+@course_blueprint.route('/label/<label>', methods=['GET'])
+def get_courses_by_label(label):
+    try:
+        # Fetch courses with the specified label
+        courses, total_courses, total_pages = Course.get_all(
+            1, 10000, "createdAt", "", 0, label, 0, 10000000, ""  # Query using the label
+        )
+        
+        # If no courses are found, return a message indicating that
+        if not courses:
+            return jsonify({"message": f"No courses found with the label '{label}'."}), 404
+        
+        return jsonify({
+            "status": "success",
+            "data": parse_json(courses),
+            "pagination": {
+                "page": 1,
+                "limit": 10000,
+                "total_items": total_courses,
+                "total_pages": total_pages
+            },
+            "message": f"Courses with label '{label}' fetched successfully!"
+        }), 200
 
+    except Exception as e:
+        return jsonify({"message": "Error retrieving courses by label", "error": str(e)}), 500
 @course_blueprint.route('/<course_id>', methods=['GET'])
 def get_course_by_id(course_id):
     try:
