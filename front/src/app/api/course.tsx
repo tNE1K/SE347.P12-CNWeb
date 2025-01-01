@@ -59,6 +59,28 @@ export const uploadImage = async (file: File) => {
     throw new Error("Image upload failed");
   }
 };
+export const uploadVideo = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file); // Append the file to the FormData object
+
+  try {
+    // POST request to upload the video file
+    const response = await request.post<{ file_url: string }>(
+      "/media/uploadVideo", // Endpoint for video upload
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Set the content type for file upload
+        },
+      },
+    );
+
+    return response; // Return the response with the uploaded video URL
+  } catch (error) {
+    console.error("Error uploading video:", error); // Log any errors
+    throw new Error("Video upload failed");
+  }
+};
 export const getUserEnrollCount = async (teacherId?: string) =>
   request.get<Promise<UserEnrollCourseCount>>(
     `/course/get-user-count-stats/${teacherId}`,
