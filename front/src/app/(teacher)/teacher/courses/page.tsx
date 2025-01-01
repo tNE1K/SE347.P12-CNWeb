@@ -16,13 +16,17 @@ import { Pagination } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Link from "next/link";
+import { useAuth } from "@/app/component/authProvider";
 const LIMIT = 4;
 export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("-createdAt");
+  const { user } = useAuth();
   const { data } = useQuery({
     queryKey: ["courses", { page: page, limit: LIMIT, order: sortBy }],
-    queryFn: () => getAllCourse(page, LIMIT, sortBy),
+    queryFn: () =>
+      getAllCourse(page, LIMIT, sortBy, "", 0, "", 0, 10000000, user?.id),
+    enabled: !!user?.id,
   });
   const courses = data?.data || [];
   const totalPages = data?.pagination?.total_pages;
