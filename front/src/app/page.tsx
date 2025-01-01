@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <div>
       <NavBar />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
         {courses.length > 0 ? (
           courses.map((course, index) => (
             <CourseCard key={index} course={course} />
@@ -69,4 +69,5 @@ export default function Home() {
       </div>
     </div>
   );
+  
 }
