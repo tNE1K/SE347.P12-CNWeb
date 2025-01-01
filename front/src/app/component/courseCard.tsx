@@ -33,22 +33,25 @@ export default function CourseCard({ course }: { course?: ICourse }) {
       </Typography>
     </CardContent>
   </CardActionArea>
-  <CardActions className="flex justify-between">
-    <div className="flex items-center gap-2">
-      <p className="text-lg font-semibold">
-        {formatToVND(course?.price || 0)}
-      </p>
-      <Rating
-        name="half-rating-read"
-        value={course?.rating || 0}
-        precision={0.5}
-        readOnly
-      />
-    </div>
+  <CardActions sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+    <p className="text-lg font-semibold" style={{ margin: 0 }}>
+      {formatToVND(course?.price || 0)}
+    </p>
+    <Rating
+      name="half-rating-read"
+      value={course?.rating || 0}
+      precision={0.5}
+      readOnly
+      sx={{ mt: 1 }}
+    />
+  </div>
+  <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
     <Button size="small" color="primary">
       View
     </Button>
-  </CardActions>
+  </div>
+</CardActions>
 </Card>
   );
 }
