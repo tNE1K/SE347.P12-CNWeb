@@ -6,6 +6,7 @@ from models.lesson_model import Lesson
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["backend"]
 course_collection = db["courses"]
+user_collection = db["users"]
 
 
 class Course:
@@ -25,6 +26,19 @@ class Course:
                 if lesson:
                     lesson_data.append(lesson)
             course["lessonIds"] = lesson_data
+            # Fetch the teacher associated with the course
+            teacher_id = course.get("teacher_id")
+            if teacher_id:
+                teacher = user_collection.find_one({"_id": ObjectId(teacher_id)})
+                if teacher:
+                    # Include teacher details in the course
+                    course["teacher"] = teacher
+                else:
+                    course["teacher"] = None  # Handle cases where teacher is not found
+            else:
+                course["teacher"] = None  # Handle cases where teacher_id is missing
+
+            return course, None
             return course, None
         except Exception as e:
             return None, str(e)
@@ -74,6 +88,17 @@ class Course:
                     if lesson:
                         lesson_data.append(lesson)
                 course["lessonIds"] = lesson_data
+                # Fetch the teacher associated with the course
+                teacher_id = course.get("teacher_id")
+                if teacher_id:
+                    teacher = user_collection.find_one({"_id": ObjectId(teacher_id)})
+                    if teacher:
+                        # Include teacher details in the course
+                        course["teacher"] = teacher
+                    else:
+                        course["teacher"] = None  # Handle cases where teacher is not found
+                else:
+                    course["teacher"] = None
 
             total_courses = course_collection.count_documents(query)
             total_pages = (total_courses + limit - 1) // limit
