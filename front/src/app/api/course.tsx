@@ -21,6 +21,12 @@ export const getAllCourse = (
   request.get<ResponseApi<ICourse[]>>(
     `/course?page=${page}&limit=${limit}&order=${sortBy}&keyword=${keyword}&rating=${rating}&label=${label}&priceFrom=${priceFrom}&priceTo=${priceTo}&teacher_id=${teacherId}`,
   );
+  export const getCourseByLabel = (
+    label: string
+  ) =>
+    request.get<ResponseApi<ICourse[]>>(
+      `/course?label=${label}`
+    );
 export const getCourseById = (courseId: string) =>
   request.get<ResponseApi<ICourse>>(`/course/${courseId}`);
 export const updateCourse = async (body: UpdateCoursePayload) => {
