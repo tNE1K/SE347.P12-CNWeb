@@ -65,7 +65,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   if (loading) {
     return (
-      <div className="w-1/3 border-r border-gray-300 p-4">
+      <div className="w-1/5 border-r border-gray-300 p-4">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-1/2"></div>
           <div className="space-y-3">
@@ -91,7 +91,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-1/3 border-r border-gray-300">
+    <div className="w-1/5 border-r border-gray-300">
       <h2 className="text-xl font-bold p-4">Cuộc trò chuyện</h2>
       <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
         {chats.length === 0 ? (

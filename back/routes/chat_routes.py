@@ -44,7 +44,7 @@ def setup_socketio(socketio):
             print(f"Message from {sender_id} to room {room}: {message}")
             emit("receive_message", {"sender": sender_id, "message": message}, room=room)
             msg = Message(sender_id, room, message)
-            msg.save()  # Lưu tin nhắn vào MongoDB
+            msg.save()
 
     @socketio.on('leave_room')
     def handle_leave_room(data):
@@ -69,18 +69,15 @@ def get_chat_list(payload):
     user_id = payload.get('user_id')
     if not user_id:
         return jsonify({"error": "User ID is required"}), 400
-    
+
     try:
         user_chats = Chat.find({
             "participants.0": user_id
         })
-        
         chat_list = []
         for chat in user_chats:
-            # Lấy thông tin chi tiết của tin nhắn cuối
             last_message = chat.get('lastMessage', {})
             if last_message:
-                # Định dạng timestamp nếu có
                 timestamp = last_message.get('timestamp')
                 if timestamp:
                     last_message['timestamp'] = timestamp.isoformat() if hasattr(timestamp, 'isoformat') else timestamp
@@ -122,7 +119,7 @@ def get_chat_messages(payload):
     if not chat_id:
         return jsonify({"error": "Chat ID is required"}), 400
     try:
-        messages = Message.find({"chatId": chat_id})  # Đây là cursor
+        messages = Message.find({"chatId": chat_id})
         print("messages:", messages)
 
         formatted_messages = []
@@ -149,7 +146,6 @@ def get_chat_messages(payload):
             "message": str(e)
         }), 500
 
-# API route để gửi tin nhắn
 @chat_blueprint.route('/send', methods=['POST'])
 @token_required
 def send_chat_message():
@@ -162,5 +158,5 @@ def send_chat_message():
         return jsonify({"error": "Sender, recipient, and message are required"}), 400
 
     msg = Message(sender, recipient, message)
-    msg.save()  # Lưu tin nhắn vào MongoDB
+    msg.save() 
     return jsonify({"success": True}), 200

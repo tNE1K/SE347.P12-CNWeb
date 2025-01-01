@@ -11,6 +11,7 @@ interface Message {
   content: string;
   sender: string;
   recipient: string;
+  timestamp: string;
 }
 
 export default function ChatPage() {
@@ -49,9 +50,16 @@ export default function ChatPage() {
       sender: user.id,
       recipient: selectedChat,
       content: message,
+      timestamp: new Date().toISOString(),
     };
 
-    socket?.emit("send_message", newMessage);
+    socket?.emit("send_message", newMessage, (response: { status: string }) => {
+      if (response.status === "success") {
+      console.log("Message sent successfully");
+      } else {
+      console.error("Failed to send message");
+      }
+    });
 
     setMessages((prev) => [...prev, { ...newMessage, _id: Date.now().toString() }]);
   };
@@ -59,7 +67,6 @@ export default function ChatPage() {
 
   const fetchMessages = async (chat_id: string) => {
     if (!user) return;
-    console.log("Fetching messages for chat:", chat_id);
     try {
       const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
           method: "GET",
@@ -71,13 +78,11 @@ export default function ChatPage() {
       }
 
       const result = await response.json();
-      console.log("Result:", result);
       if (result.status === "success" && result.data.messages) {
         const messages = result.data.messages;
         messages.forEach((message: { content: string; timestamp: string; sender: string; recipient: string }) => {
-          console.log(`Message from ${message.sender} to ${message.recipient} at ${message.timestamp}: ${message.content}`);
+          // console.log(`Message from ${message.sender} to ${message.recipient} at ${message.timestamp}: ${message.content}`);
         });
-        console.log("Formatter messages: ", messages);
         setMessages(messages);
       }
     } catch (error) {
@@ -88,18 +93,21 @@ export default function ChatPage() {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat);
+      setMessages(messages);
     }
   }, [selectedChat]);
 
   return (
-      console.log("messager forward: ", messages),
+      // console.log("messager forward: ", messages),
       <div className="flex h-screen">
       <ChatList onSelectChat={setSelectedChat} />
       <div className="flex-1 flex flex-col">
         {selectedChat ? (
             <>
-            <ChatWindow messages={messages} />
-            <MessageInput onSendMessage={sendMessage} />
+              <ChatWindow messages={messages} />
+              {user?.id && selectedChat && (
+                <MessageInput onSendMessage={sendMessage} sender={user.id} recipient={selectedChat} chatId={selectedChat} />
+              )}
             </>
         ) : (
           <div className="flex h-full justify-center items-center">
