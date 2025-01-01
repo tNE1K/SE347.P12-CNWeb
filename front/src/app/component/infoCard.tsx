@@ -1,36 +1,37 @@
 "use client";
-import { Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sendVerifyDocument } from "../api/teacher";
+import { fetchInfo } from "../api/user";
+import { updateInfo } from "../api/user";
+
 interface BirthdatePickProps {
   disabled: boolean;
 }
-
-const BirthdatePick: React.FC<BirthdatePickProps> = ({ disabled }) => {
-  const [value, setValue] = React.useState<Dayjs | null>(null);
-
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DatePicker
-        disabled={disabled}
-        value={value}
-        onChange={(newValue) => setValue(newValue)}
-      />
-    </LocalizationProvider>
-  );
-};
 
 const bull = (
   <Box
     component="span"
     sx={{ display: "inline-block", mx: "2px", transform: "scale(0.8)" }}
-  >
-  </Box>
+  ></Box>
 );
 
 export default function InfoCard() {
@@ -38,6 +39,29 @@ export default function InfoCard() {
   const [open, setOpen] = useState(false);
   const [certificateFiles, setCertificateFiles] = useState<File[]>([]);
   const [idFile, setIdFile] = useState<File | null>(null);
+  const [userInfo, setUserInfo] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    birthday: "",
+  });
+
+  const BirthdatePick: React.FC<BirthdatePickProps> = ({ disabled }) => {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          disabled={disabled}
+          value={userInfo.birthday ? dayjs(userInfo.birthday) : null}
+          onChange={(newValue) =>
+            setUserInfo((prevState) => ({
+              ...prevState,
+              birthday: newValue ? newValue.format("YYYY-MM-DD") : "",
+            }))
+          }
+        />
+      </LocalizationProvider>
+    );
+  };
 
   // Open/close dialog handlers
   const handleOpen = () => setOpen(true);
@@ -73,13 +97,32 @@ export default function InfoCard() {
   };
 
   const handleEditClick = () => {
-    setIsEditing(true); // Enable edit mode
+    setIsEditing(true);
   };
 
-  const handleSaveClick = () => {
-    setIsEditing(false);
-    // Add logic to save data here
+  const handleSaveClick = async () => {
+    try {
+      await updateInfo(userInfo, userInfo.email)
+      alert("User information updated successfully!");
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating user information:", error);
+      alert("Failed to update user information.");
+    }
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetchInfo();
+        setUserInfo(response);
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <Card sx={{ width: "100%" }}>
@@ -93,7 +136,10 @@ export default function InfoCard() {
             <TextField
               disabled={!isEditing}
               id="first-name-textfield"
-              defaultValue="Jane"
+              value={userInfo.firstName}
+              onChange={(e) =>
+                setUserInfo({ ...userInfo, firstName: e.target.value })
+              }
             />
           </div>
           <div className={"flex flex-col gap-2 w-1/2"}>
@@ -103,7 +149,10 @@ export default function InfoCard() {
             <TextField
               disabled={!isEditing}
               id="last-name-textfield"
-              defaultValue="Doe"
+              value={userInfo.lastName}
+              onChange={(e) =>
+                setUserInfo({ ...userInfo, lastName: e.target.value })
+              }
             />
           </div>
         </div>
@@ -112,9 +161,9 @@ export default function InfoCard() {
             Email
           </Typography>
           <TextField
-            disabled={!isEditing}
+            disabled
             id="email-textfield"
-            defaultValue="jane.doe@example.com"
+            value={userInfo.email}
           />
         </div>
         <div className={"flex flex-col gap-2"}>
@@ -143,38 +192,42 @@ export default function InfoCard() {
   );
 
   function InputDialog() {
-    return <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Upload Verification Documents</DialogTitle>
-      <DialogContent>
-        <TextField
-          type="file"
-          slotProps={{
-            inputLabel: { shrink: true },
-            htmlInput: { accept: "image", multiple: true }
-          }}
-          onChange={handleCertificateChange}
-          fullWidth
-          margin="dense"
-          label="Certificates (Upload multiple images)" />
-        <TextField
-          type="file"
-          slotProps={{
-            inputLabel: { shrink: true },
-            htmlInput: { accept: "image" }
-          }}
-          onChange={handleIdChange}
-          fullWidth
-          margin="dense"
-          label="ID Image (Upload only one)" />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="secondary">
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} color="primary" variant="contained">
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>;
+    return (
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Upload Verification Documents</DialogTitle>
+        <DialogContent>
+          <TextField
+            type="file"
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { accept: "image", multiple: true },
+            }}
+            onChange={handleCertificateChange}
+            fullWidth
+            margin="dense"
+            label="Certificates (Upload multiple images)"
+          />
+          <TextField
+            type="file"
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { accept: "image" },
+            }}
+            onChange={handleIdChange}
+            fullWidth
+            margin="dense"
+            label="ID Image (Upload only one)"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} color="primary" variant="contained">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
   }
 }
