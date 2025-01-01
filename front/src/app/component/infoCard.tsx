@@ -26,6 +26,7 @@ interface BirthdatePickProps {
 
 const InfoCard: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isVerifySent, setIsVerifySent] = useState(false);
   const [open, setOpen] = useState(false);
   const [certificateFiles, setCertificateFiles] = useState<File[]>([]);
   const [idFile, setIdFile] = useState<File | null>(null);
@@ -34,6 +35,7 @@ const InfoCard: React.FC = () => {
     lastName: "",
     email: "",
     birthday: "",
+    teacherVerifyRequest: false,
   });
 
   const BirthdatePick: React.FC<BirthdatePickProps> = ({ disabled }) => {
@@ -101,6 +103,7 @@ const InfoCard: React.FC = () => {
       try {
         const response = await fetchUserInfo();
         setUserInfo(response);
+        setIsVerifySent(response.teacherVerifyRequest);
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
@@ -169,7 +172,7 @@ const InfoCard: React.FC = () => {
         </div>
       </CardContent>
       <CardActions className="justify-between">
-        <Button variant="contained" color="primary" onClick={handleOpen}>
+        <Button variant="contained" color="primary" onClick={handleOpen} disabled={isVerifySent}>
           Verify to be a Teacher
         </Button>
         {InputDialog()}

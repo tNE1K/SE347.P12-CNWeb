@@ -94,6 +94,7 @@ def get_info(payload):
                 "firstName": user["firstName"],
                 "lastName": user["lastName"],
                 "birthday": user["birthday"],
+                "teacherVerifyRequest": user["teacherVerifyRequest"],
             }), 200
 
 @user_blueprint.route('/update', methods=['POST'])
