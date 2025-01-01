@@ -103,13 +103,75 @@ def get_comments_by_course(course_id):
         # Get pagination parameters
         page = int(request.args.get("page", 1))
         limit = int(request.args.get("limit", 10))
+        order = request.args.get('order', default='createdAt')
+        if not order.strip():  
+            order = 'createdAt'
+        valid_sort_fields = {"createdAt", "-createdAt", "rating","-rating"}
 
-        # Find comments by course_id with pagination
-        comments_cursor = comments_collection.find({"course_id": course_id}).skip((page - 1) * limit).limit(limit)
+        # Check if order is valid
+        if not order or order not in valid_sort_fields:
+            return jsonify({"message": f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"}), 400
+        sort_field = order.lstrip('-')  
+        sort_direction = -1 if order.startswith('-') else 1 
+
+        
+        # Create the aggregation pipeline
+        pipeline = [
+            {"$match": {"course_id": course_id, "isReply": False}}, 
+            {"$sort" : { sort_field : sort_direction } },
+            {"$skip": (page - 1) * limit},  # Pagination: Skip the documents for the current page
+            {"$limit": limit},  # Limit the number of documents to the specified limit
+            {
+                "$lookup": {
+                    "from": "users", 
+                    "let": {"user_id": {"$toObjectId": "$user_id"}},  # Convert user_id to ObjectId
+                    "pipeline": [
+                        {"$match": {"$expr": {"$eq": ["$_id", "$$user_id"]}}}
+                    ],
+                    "as": "user_info"
+                }
+            },
+            {"$unwind": {
+                "path": "$user_info",  # Unwind the user_info array (since $lookup results in an array)
+                "preserveNullAndEmptyArrays": True  # Keep comments even if no matching user
+            }},
+            {
+                "$project": {  # Project the necessary fields
+                    "_id": 1,
+                    "lesson_id": 1,
+                    "course_id": 1,
+                    "user_id": 1,
+                    "content": 1,
+                    "rating": 1,
+                    "isReply": 1,
+                    "replyIds": 1,
+                    "createdAt": 1,
+                    "user_info.fullName": 1,
+                    "user_info.email": 1,
+                    "user_info.avatar" : 1
+                }
+            }
+        ]
+
+        # Execute the aggregation pipeline
+        comments_cursor = comments_collection.aggregate(pipeline)
         comments = list(comments_cursor)
 
-        # Count total comments for the course
-        total_comments = comments_collection.count_documents({"course_id": course_id})
+        # Count total comments for the lesson
+        total_comments = comments_collection.count_documents({"course_id": course_id, "isReply" : False})
+
+        # Loop through comments to get replies
+        for comment in comments:
+            reply_ids = comment.get("replyIds", [])
+            replies = []
+            for reply_id in reply_ids:
+                reply_comment, error = Comment.get_one(reply_id)
+                if reply_comment:
+                    replies.append(reply_comment)
+                else:
+                    # Handle error if needed (e.g., log the error or skip the reply)
+                    continue
+            comment["replyIds"] = replies
 
         response = {
             "status": "success",
@@ -191,7 +253,7 @@ def get_comments_by_lesson(lesson_id):
         comments = list(comments_cursor)
 
         # Count total comments for the lesson
-        total_comments = comments_collection.count_documents({"lesson_id": lesson_id})
+        total_comments = comments_collection.count_documents({"lesson_id": lesson_id, "isReply" : False})
 
         # Loop through comments to get replies
         for comment in comments:

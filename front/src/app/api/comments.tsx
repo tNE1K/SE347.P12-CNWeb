@@ -2,8 +2,8 @@ import { IComment } from "../types/comment";
 import { ResponseApi } from "../types/utils";
 import request from "./request";
 export interface CreateCommentPayload {
-  lesson_id: string;
-  course_id: string;
+  lesson_id?: string;
+  course_id?: string;
   user_id: string;
   content: string;
   rating: number;
@@ -23,6 +23,15 @@ export const getCommentsByLessonId = (
 ) =>
   request.get<ResponseApi<IComment[]>>(
     `/comment/by-lesson/${lessonId}?page=${page}&limit=${limit}&order=${sortBy}`,
+  );
+export const getCommentsByCourseId = (
+  page: number = 1,
+  limit: number = 10,
+  courseId: string,
+  sortBy: string,
+) =>
+  request.get<ResponseApi<IComment[]>>(
+    `/comment/by-course/${courseId}?page=${page}&limit=${limit}&order=${sortBy}`,
   );
 export const createComment = (payload: CreateCommentPayload) =>
   request.post<ResponseApi<IComment>>(`/comment/upload`, payload);
