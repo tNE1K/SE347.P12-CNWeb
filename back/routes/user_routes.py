@@ -86,24 +86,15 @@ def upload_documents(user_id):
     
 @user_blueprint.route('/me', methods=['GET'])
 @token_required
-def get_user_info():
-    token = request.cookies.get("auth_token")
-    if not token:
-        return jsonify({"message": "Unauthorized"}), 401
-    try:
-        user_data = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        return jsonify(
+def get_info(payload):
+    user = User.find_by_email(payload['email'])
+    return jsonify(
             {
-                "id": user_data["user_id"],
-                "email": user_data["email"],
-                "role": user_data["role"],
-                "isVerify": user_data["isVerify"],
-            }
-        )
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
+                "email": user["email"],
+                "firstName": user["firstName"],
+                "lastName": user["lastName"],
+                "birthday": user["birthday"],
+            }), 200
 
 @user_blueprint.route('/update', methods=['POST'])
 @token_required
