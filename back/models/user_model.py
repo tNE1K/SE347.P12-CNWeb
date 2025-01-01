@@ -54,6 +54,18 @@ class User:
         return user_collection.update_one({"email": email}, {"$set": update_data})
     
     @staticmethod
+    def update_user_first_name(email, update_data):
+        return user_collection.update_one({"email": email}, {"$set": {"firstName":update_data}})
+    
+    @staticmethod
+    def update_user_last_name(email, update_data):
+        return user_collection.update_one({"email": email}, {"$set": {"lastName":update_data}})
+    
+    @staticmethod
+    def update_user_birthday(email, update_data):
+        return user_collection.update_one({"email": email}, {"$set": {"birthday":update_data}})
+    
+    @staticmethod
     def set_verify_request(id):
         return user_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": True}}
