@@ -32,7 +32,7 @@ class Course:
     def get_all(page, limit, order, keyword, rating, label, priceFrom, priceTo,teacher_id):
         try:
             skip = (page - 1) * limit
-            valid_sort_fields = {"createdAt", "title", "-createdAt", "-title", "rating", "-rating"}
+            valid_sort_fields = {"createdAt", "title", "-createdAt", "-title", "rating", "-rating","price","-price"}
 
             if not order or order not in valid_sort_fields:
                 return None, f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"

@@ -1,21 +1,13 @@
 "use client";
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Drawer from "@mui/material/Drawer";
-import CssBaseline from "@mui/material/CssBaseline";
-import AppBar from "@mui/material/AppBar";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
+
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HomeIcon from "@mui/icons-material/Home";
 import { Notifications } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import MessageIcon from "@mui/icons-material/Message";
 const drawerWidth = 240;
 const menuItems = [
   {
@@ -29,9 +21,9 @@ const menuItems = [
     icon: <MenuBookIcon />,
   },
   {
-    label: "Users",
-    href: "/teacher/users",
-    icon: <PersonIcon />,
+    label: "Comments",
+    href: "/teacher/comments",
+    icon: <MessageIcon />,
   },
   {
     label: "Notifications",

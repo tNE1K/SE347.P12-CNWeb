@@ -109,6 +109,9 @@ export default function LessonInfo({ course }: { course: ICourse }) {
   useEffect(() => {
     if (lessonsRes) {
       setLessons(lessonsRes);
+      if (lessonsRes.length > 0) {
+        setLessonSlt(lessonsRes[0]._id);
+      }
     }
   }, [lessonsRes]);
   return (
@@ -127,39 +130,46 @@ export default function LessonInfo({ course }: { course: ICourse }) {
           Add lesson
         </Button>
       </div>
-      <div className="flex gap-4">
-        <div className="basis-[25%]">
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <SortableContext
-              items={lessons.map((lesson) => lesson._id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {lessons.map((lesson, id) => {
-                return (
-                  <LessonRow
-                    key={lesson._id}
-                    setLessonSlt={setLessonSlt}
-                    lessonSlt={lessonSlt}
-                    lesson={lesson}
-                  ></LessonRow>
-                );
-              })}
-            </SortableContext>
-          </DndContext>
+      {lessons.length === 0 && (
+        <div className="flex min-h-[300px] items-center justify-center">
+          Hiện tại chưa có bài học nào
         </div>
-        <div className="basis-[75%]">
-          {lessonSlt && (
-            <LessonDetail
-              setLessonSlt={setLessonSlt}
-              lesson={{
-                ...lessons[
-                  lessons.findIndex((lesson) => lesson._id === lessonSlt)
-                ],
-              }}
-            />
-          )}
+      )}
+      {lessons.length > 0 && (
+        <div className="flex gap-4">
+          <div className="basis-[25%]">
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={lessons.map((lesson) => lesson._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {lessons.map((lesson, id) => {
+                  return (
+                    <LessonRow
+                      key={lesson._id}
+                      setLessonSlt={setLessonSlt}
+                      lessonSlt={lessonSlt}
+                      lesson={lesson}
+                    ></LessonRow>
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+          </div>
+          <div className="basis-[75%]">
+            {lessonSlt && (
+              <LessonDetail
+                setLessonSlt={setLessonSlt}
+                lesson={{
+                  ...lessons[
+                    lessons.findIndex((lesson) => lesson._id === lessonSlt)
+                  ],
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

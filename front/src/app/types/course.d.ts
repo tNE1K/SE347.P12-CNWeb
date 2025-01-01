@@ -37,3 +37,21 @@ export interface SearchCourseParams {
   priceFrom: number;
   priceTo: number;
 }
+export interface UserEnrollCourseCount {
+  data: {
+    name: string;
+    numberEnroll: number;
+  }[];
+  message: string;
+  status: string;
+  totalUniqueUsersEnroll: number;
+}
+export interface CourseCount {
+  data: {
+    label: string;
+    numberCourse: number;
+  }[];
+  message: string;
+  status: string;
+  totalCourses: number;
+}

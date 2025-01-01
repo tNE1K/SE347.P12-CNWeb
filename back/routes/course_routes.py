@@ -44,7 +44,7 @@ def get_all_course():
         teacher_id = request.args.get('teacher_id', default='').strip()
 
         # Validate order
-        valid_sort_fields = {"createdAt", "title", "-createdAt", "-title", "rating", "-rating"}
+        valid_sort_fields = {"createdAt", "title", "-createdAt", "-title", "rating", "-rating","price","-price"}
         if not order or order not in valid_sort_fields:
             return jsonify({"message": f"Invalid 'order' value. Allowed values: {', '.join(valid_sort_fields)}"}), 400
 
@@ -212,3 +212,58 @@ def delete_course(course_id):
 
     except Exception as e:
         return jsonify({"message": "Error deleting course", "error": str(e)}), 500
+@course_blueprint.route('/get-user-count-stats/<teacher_id>', methods=['GET'])
+def get_user_count_stats(teacher_id):
+    try:
+        courses, total_courses, total_pages = Course.get_all(
+            1, 10000, "createdAt", "", 0, "", 0 , 10000000, teacher_id
+        )    
+        course_stats = []   
+        unique_users = set()
+        for course in courses:
+            unique_users.update(course.get("participantsId", []))
+
+            course_stats.append({
+                "name": course["title"],
+                "numberEnroll": len(course.get("participantsId", []))
+            })
+        total_unique_users = len(unique_users)
+        return jsonify({
+            "status": "success",
+            "data": course_stats,
+            "totalUniqueUsersEnroll": total_unique_users,
+            "message": "Course stats fetched successfully!"
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": "Error retrieving data", "error": str(e)}), 500
+@course_blueprint.route('/get-course-count-stats/<teacher_id>', methods=['GET'])
+def get_course_count_stats(teacher_id):
+    try:
+        # Fetch courses for the given teacher
+        courses, total_courses, total_pages = Course.get_all(
+            1, 10000, "createdAt", "", 0, "", 0 , 10000000, teacher_id
+        )
+        
+        # Initialize a dictionary to store the count of courses by label
+        label_count = {}
+
+        # Iterate through the courses and count the labels
+        for course in courses:
+            for label in course.get("label", []):
+                if label not in label_count:
+                    label_count[label] = 0
+                label_count[label] += 1
+        
+        # Convert the label_count dictionary to a list of dictionaries in the required format
+        course_stats = [{"label": label, "numberCourse": count} for label, count in label_count.items()]
+
+        return jsonify({
+            "status": "success",
+            "data": course_stats,
+            "message": "Course stats fetched successfully!",
+            "totalCourses" : total_courses
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": "Error retrieving data", "error": str(e)}), 500
