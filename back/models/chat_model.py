@@ -10,7 +10,7 @@ messages_collection = db['chats']
 class Chat:
     @staticmethod
     def get_or_create_chat(chat_id):
-        chat = db.chats.find_one({"_id": ObjectId(chat_id)})
+        chat = db.chats.find({"_id": ObjectId(chat_id)})
         if not chat:
             db.chats.insert_one({
                 "_id": ObjectId(chat_id),

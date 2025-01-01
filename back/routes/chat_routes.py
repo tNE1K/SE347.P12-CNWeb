@@ -24,7 +24,8 @@ def setup_socketio(socketio):
 
     @socketio.on('join_room')
     def handle_join_room(data):
-        print(data)
+        print("in here")
+        print("this is  data" + data)
         room = data.get('room')
         user_id = request.args.get('user_id')  
 
@@ -70,7 +71,6 @@ def get_chat_list(payload):
         return jsonify({"error": "User ID is required"}), 400
     
     try:
-        # Tìm tất cả chat mà user là người tạo
         user_chats = Chat.find({
             "participants.0": user_id
         })
@@ -99,6 +99,7 @@ def get_chat_list(payload):
                 }
             }
             chat_list.append(chat_data)
+            print("chat data: ", chat_data)
         
         return jsonify({
             "status": "success",
@@ -113,17 +114,40 @@ def get_chat_list(payload):
             "message": str(e)
         }), 500
 
-# API route để lấy tin nhắn
 @chat_blueprint.route('/messages', methods=['GET'])
 @token_required
 def get_chat_messages(payload):
-    print(payload)
-    sender = request.args.get('user_id')
-    recipient = request.args.get('recipient')
-    if not sender or not recipient:
-        return jsonify({"error": "Sender and recipient are required"}), 400
-    messages = Message.get_messages(sender, recipient)  # Lấy tin nhắn từ MongoDB
-    return jsonify(messages), 200
+    chat_id = request.args.get('chat_id')
+    print("payload", payload)
+    if not chat_id:
+        return jsonify({"error": "Chat ID is required"}), 400
+    try:
+        messages = Message.find({"chatId": chat_id})  # Đây là cursor
+        print("messages:", messages)
+
+        formatted_messages = []
+        for message in messages:
+            formatted_message = {
+                "id": str(message['_id']),
+                "sender": message['sender'],
+                "recipient": message['recipient'],
+                "content": message['content'],
+                "timestamp": message['timestamp'].isoformat() if hasattr(message['timestamp'], 'isoformat') else message['timestamp']
+            }
+            formatted_messages.append(formatted_message)
+        print("formatted_messages: ", formatted_messages)
+        return jsonify({
+            "status": "success",
+            "data": {
+                "messages": formatted_messages
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 # API route để gửi tin nhắn
 @chat_blueprint.route('/send', methods=['POST'])

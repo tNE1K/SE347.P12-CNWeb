@@ -21,102 +21,89 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    console.log("user", user); 
+
     const socketConnection = io("http://127.0.0.1:5000", {
       query: { user_id: user.id },
       withCredentials: true,
     });
+
     setSocket(socketConnection);
-    console.log("socketConnection", socketConnection);
-    socketConnection.emit("connect_user", user.id);
+
+    socketConnection.on("connect", () => {
+      console.log("Connected to socket server");
+    });
 
     socketConnection.on("receive_message", (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+      setMessages((prev) => [...prev, message]);
     });
 
     return () => {
       socketConnection.disconnect();
     };
-  }, [user?.id]);
-
-  const fetchMessages = async (recipient: string) => {
-    if (!user?.id) return;
-    try {
-      const chatListResponse = await fetch(`http://127.0.0.1:5000/chat/list`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!chatListResponse.ok) {
-        throw new Error("Lấy danh sách cuộc trò chuyện thất bại");
-      }
-
-      const chatListData = await chatListResponse.json();
-      console.log("Danh sách cuộc trò chuyện:", chatListData);
-
-      const response = await fetch(
-        `http://127.0.0.1:5000/chat/messages?sender=${user.id}&recipient=${recipient}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Lấy tin nhắn thất bại");
-      }
-
-      const data = await response.json();
-      setMessages(data);
-    } catch (error) {
-      console.error("Lỗi khi lấy tin nhắn:", error);
-    }
-  };
+  }, [user]);
 
   const sendMessage = async (message: string) => {
     if (!user || !selectedChat) return;
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/chat/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ sender: user.id, recipient: selectedChat, content: message }),
-      });
 
+    const newMessage = {
+      sender: user.id,
+      recipient: selectedChat,
+      content: message,
+    };
+
+    socket?.emit("send_message", newMessage);
+
+    setMessages((prev) => [...prev, { ...newMessage, _id: Date.now().toString() }]);
+  };
+
+
+  const fetchMessages = async (chat_id: string) => {
+    if (!user) return;
+    console.log("Fetching messages for chat:", chat_id);
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
+          method: "GET",
+          credentials: "include",
+      });
+      
       if (!response.ok) {
-        throw new Error("Gửi tin nhắn thất bại");
+        throw new Error("Failed to fetch messages");
       }
 
-      const data = await response.json();
-      setMessages((prevMessages) => [...prevMessages, data]);
-
-      if (socket) {
-        socket.emit("send_message", data);
+      const result = await response.json();
+      console.log("Result:", result);
+      if (result.status === "success" && result.data.messages) {
+        const messages = result.data.messages;
+        messages.forEach((message: { content: string; timestamp: string; sender: string; recipient: string }) => {
+          console.log(`Message from ${message.sender} to ${message.recipient} at ${message.timestamp}: ${message.content}`);
+        });
+        console.log("Formatter messages: ", messages);
+        setMessages(messages);
       }
     } catch (error) {
-      console.error("Lỗi khi gửi tin nhắn:", error);
+      console.error("Error fetching messages:", error);
     }
   };
 
-  const handleChatSelect = (chatId: string) => {
-    setSelectedChat(chatId);
-    fetchMessages(chatId);
-  };
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat);
+    }
+  }, [selectedChat]);
 
   return (
-    <div className="flex h-screen">
-      <ChatList onSelectChat={handleChatSelect} />
-      <div className="flex flex-1 flex-col">
+      console.log("messager forward: ", messages),
+      <div className="flex h-screen">
+      <ChatList onSelectChat={setSelectedChat} />
+      <div className="flex-1 flex flex-col">
         {selectedChat ? (
-          <>
+            <>
             <ChatWindow messages={messages} />
             <MessageInput onSendMessage={sendMessage} />
-          </>
+            </>
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <h2 className="text-gray-500">Chọn một cuộc trò chuyện để bắt đầu nhắn tin</h2>
+          <div className="flex h-full justify-center items-center">
+            Select a chat to start messaging
           </div>
         )}
       </div>

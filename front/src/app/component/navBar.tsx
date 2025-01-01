@@ -70,7 +70,7 @@ export default function NavBar() {
           onChange={(e) => setSearchField(e.target.value)}
         />
 
-          <Button
+        <Button
             variant="outlined"
             onClick={() => {
               router.push("/chat");

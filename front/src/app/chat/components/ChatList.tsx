@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-// Removed import statement for 'date-fns'
+import { formatDistanceToNow as formatDistanceToNowFn } from "date-fns";
+import { useAuth } from "@/app/component/authProvider";
 
 interface ChatListProps {
   onSelectChat: (chatId: string) => void;
@@ -25,8 +26,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
+  
   useEffect(() => {
+    if (!user?.id) return;
+
     const fetchChats = async () => {
       try {
         setLoading(true);
@@ -42,6 +46,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         const result = await response.json();
         if (result.status === "success" && result.data.chats) {
           setChats(result.data.chats);
+          console.log(result.data.chats);
         }
       } catch (error) {
         console.error("Error fetching chats:", error);
@@ -53,6 +58,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
     fetchChats();
   }, []);
+
+  const handleSelectChat = (chatId: string) => {
+    onSelectChat(chatId);
+  };
 
   if (loading) {
     return (
@@ -77,6 +86,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     );
   }
 
+  function formatDistanceToNow(date: Date, options: { addSuffix: boolean }): React.ReactNode {
+    return formatDistanceToNowFn(date, options);
+  }
+
   return (
     <div className="w-1/3 border-r border-gray-300">
       <h2 className="text-xl font-bold p-4">Cuộc trò chuyện</h2>
@@ -90,7 +103,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
             {chats.map((chat) => (
               <li
                 key={chat.id}
-                onClick={() => onSelectChat(chat.id)}
+                onClick={() => handleSelectChat(chat.id)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="p-4 space-y-2">
@@ -98,11 +111,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     <div className="font-medium">
                       {chat.isGroupChat ? "Group Chat" : chat.participants.receiver}
                     </div>
-                    {/* {chat.lastMessage?.timestamp && (
+                    {chat.lastMessage?.timestamp && (
                       <span className="text-xs text-gray-500">
                         {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
                       </span>
-                    )} */}
+                    )}
                   </div>
                   {chat.lastMessage && (
                     <div className="flex justify-between items-center">

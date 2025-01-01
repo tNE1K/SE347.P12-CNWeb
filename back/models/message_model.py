@@ -62,8 +62,9 @@ class Message:
     
     @staticmethod
     def find(query):
-        return messages_collection.find(query)
-    
+        return db.messages.find(query)  # Trả về Cursor từ MongoDB
+
+
     @staticmethod
     def get_unread_count(chat_id, user_id):
         return messages_collection.count_documents({

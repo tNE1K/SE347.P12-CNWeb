@@ -1,4 +1,3 @@
-// components/MessageInput.tsx
 import React, { useState } from "react";
 
 interface MessageInputProps {
@@ -6,30 +5,26 @@ interface MessageInputProps {
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
-  const [message, setMessage] = useState("");
+  const [input, setInput] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() !== "") {
-      onSendMessage(message);
-      setMessage("");
+    if (input.trim()) {
+      onSendMessage(input);
+      setInput("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t border-gray-300">
+    <form className="p-4 border-t" onSubmit={handleSend}>
       <input
         type="text"
-        className="w-full p-2 border rounded-md"
-        placeholder="Type a message..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Type a message"
+        className="w-full border rounded px-2 py-1"
       />
-      <button type="submit" className="mt-2 w-full bg-blue-500 text-white p-2 rounded-md">
-        Send
-      </button>
     </form>
   );
 };
-
 export default MessageInput;
