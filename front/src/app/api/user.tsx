@@ -12,6 +12,18 @@ export const fetchInfo = async () => {
   }
 };
 
+export const fetchUserInfo = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/user/me", {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.log("Error fetching user info:", error);
+    throw error;
+  }
+};
+
 export const fetchCourse = async () => {
   try {
     const response = await axios.get("http://localhost:5000/user/course", {
