@@ -50,6 +50,8 @@ export default function NavBar() {
       const response = await getCourseByLabel(selectedLabel);
       setCourses(response.data); // Assuming the API returns the list of courses
       console.log(response.data);
+      router.push(`/search?kw=&label=${selectedLabel}`);
+      
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
