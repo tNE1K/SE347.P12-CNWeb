@@ -6,9 +6,14 @@ export const getAllCourse = (
   page: string | number = 1,
   limit: string | number = 10,
   sortBy: string | "",
+  keyword: string = "",
+  rating: number = 0,
+  label: string = "",
+  priceFrom: number = 0,
+  priceTo: number = 10000000,
 ) =>
   request.get<ResponseApi<ICourse[]>>(
-    `/course?page=${page}&limit=${limit}&order=${sortBy}`,
+    `/course?page=${page}&limit=${limit}&order=${sortBy}&keyword=${keyword}&rating=${rating}&label=${label}&priceFrom=${priceFrom}&priceTo=${priceTo}`,
   );
 export const getCourseById = (courseId: string) =>
   request.get<ResponseApi<ICourse>>(`/course/${courseId}`);

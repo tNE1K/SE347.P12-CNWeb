@@ -78,6 +78,7 @@ export function EditCourseModal({
   const [nameCourse, setNameCourse] = useState("");
   const [label, setLabel] = useState<string[]>([]);
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -111,6 +112,7 @@ export function EditCourseModal({
         label: label,
         cover: imgSrc || iniCourse.cover,
         status: "publish",
+        price: price,
       },
     };
 
@@ -132,6 +134,7 @@ export function EditCourseModal({
       setNameCourse(iniCourse.title);
       setDescription(iniCourse.description);
       setLabel(iniCourse.label);
+      setPrice(iniCourse.price);
       imgUrl.current = iniCourse.cover;
     }
   }, []);
@@ -177,7 +180,13 @@ export function EditCourseModal({
           onChange={(e) => setDescription(e.target.value)}
           multiline
         />
-
+        <TextField
+          label="Price"
+          name="price"
+          value={price}
+          type="number"
+          onChange={(e) => setPrice(Number(e.target.value))}
+        />
         <FormControl sx={{ width: 300 }}>
           <InputLabel id="demo-multiple-name-label">
             Add labels Course

@@ -119,7 +119,9 @@ export default function CoursesPage() {
                 <TableCell align="center">
                   {convertISOToDate(course.createdAt)}
                 </TableCell>
-                <TableCell align="center">{course.rating}/5</TableCell>
+                <TableCell align="center">
+                  {course.rating.toFixed(1)}/5
+                </TableCell>
                 <TableCell align="center">
                   <Link href={`/teacher/courses/${course._id}`}>
                     <OpenInNewIcon className="cursor-pointer" />
