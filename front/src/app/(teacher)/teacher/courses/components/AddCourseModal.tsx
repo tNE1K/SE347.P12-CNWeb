@@ -98,6 +98,7 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
   const imgUrl = useRef<string>();
   const [error, setError] = useState("");
   const [nameCourse, setNameCourse] = useState("");
+  const [price, setPrice] = useState(0);
   const [label, setLabel] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
@@ -129,6 +130,7 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
     formData.append("title", nameCourse);
     formData.append("description", description);
     formData.append("cover", imgSrc);
+    formData.append("price", price.toString());
     formData.append("label", JSON.stringify(label));
     formData.append("status", "publish");
     mutate(formData);
@@ -187,7 +189,13 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
           onChange={(e) => setDescription(e.target.value)}
           multiline
         />
-
+        <TextField
+          label="Price"
+          name="price"
+          value={price}
+          type="number"
+          onChange={(e) => setPrice(Number(e.target.value))}
+        />
         <FormControl sx={{ width: 300 }}>
           <InputLabel id="demo-multiple-name-label">
             Add labels Course

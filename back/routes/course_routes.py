@@ -36,6 +36,11 @@ def get_all_course():
         page = request.args.get('page', default=1, type=int)  
         limit = request.args.get('limit', default=10, type=int) 
         order = request.args.get('order', default='createdAt')
+        keyword = request.args.get('keyword', default='').strip()
+        rating = request.args.get('rating', default=0,type=int)
+        label = request.args.get('label', default='').strip()
+        priceFrom = request.args.get('priceFrom', default=0,type=int)
+        priceTo = request.args.get('priceTo', default=10000000,type=int)
         if not order.strip():  
             order = 'createdAt'
         valid_sort_fields = {"createdAt", "title", "-createdAt", "-title","rating","-rating"}
@@ -51,7 +56,33 @@ def get_all_course():
             return jsonify({"message": "Page and limit must be positive integers."}), 400
 
         skip = (page - 1) * limit
-        courses_cursor = courses_collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+
+        # Build the query
+        # Build the query
+        query = {}
+        filters = []
+
+        # Add keyword filter
+        if keyword:
+            filters.append({
+                "$or": [
+                    {"title": {"$regex": keyword, "$options": "i"}},  
+                    {"description": {"$regex": keyword, "$options": "i"}}  
+                ]
+            })
+        
+        # Add rating filter
+        if rating > 0:
+            filters.append({"rating": {"$gte": rating}})
+        # Add price range filter
+        if priceFrom >= 0 and priceTo > priceFrom:
+            filters.append({"price": {"$gte": priceFrom, "$lte": priceTo}})
+        # Add label filter
+        if label:
+            filters.append({"label": {"$in": [label]}})
+        if filters:
+            query = {"$and": filters}
+        courses_cursor = courses_collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         courses = list(courses_cursor)  
 
         total_courses = courses_collection.count_documents({})
@@ -119,6 +150,7 @@ def create_course():
         cover_url = request.form.get('cover')  # If cover is a URL, it's part of form-data
         status = request.form.get('status')  # publish | hide
         label = request.form.get('label')
+        price = request.form.get('price')
 
         # If the cover is a file instead of a URL
         if 'cover' in request.files:
@@ -148,6 +180,7 @@ def create_course():
             "numberRatings": 0,
             "status": status,
             "label": label,
+            "price": int(price),
             "createdAt": datetime.now().isoformat()
         }
 
@@ -166,6 +199,7 @@ def update_course(course_id):
         status = data.get('status')
         label = data.get('label')  
         cover = data.get('cover')  
+        price = data.get('price')  
         lessonIds = data.get('lessonIds')  
 
 
@@ -186,6 +220,8 @@ def update_course(course_id):
             update_data["label"] = label
         if cover: 
             update_data["cover"] = cover
+        if price: 
+            update_data["price"] = price
         if lessonIds: 
             update_data["lessonIds"] = lessonIds
         result = courses_collection.update_one(
