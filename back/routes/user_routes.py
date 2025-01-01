@@ -122,3 +122,79 @@ def update_user_details(payload):
     User.update_user_last_name(email, last_name)
 
     return jsonify({"message": "success"}), 200
+
+@user_blueprint.route('/upload-video/<user_id>', methods=['POST'])
+@token_required
+def upload_video(user_id):
+    try:
+        # Accessing the video file from the request
+        video = request.files.get('video')
+        
+        if not video:
+            return jsonify({'message': 'Video file is required.'}), 400
+        
+        # Define the allowed extensions for video files
+        ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'}
+        
+        # Function to check if a file is allowed
+        def allowed_file(filename):
+            return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
+        
+        # Function to generate a unique blob path for video
+        def generate_blob_path(file):
+            ext = os.path.splitext(file.filename)[1]
+            return f"videos/{user_id}/{uuid.uuid4()}{ext}"
+        
+        # Check if the video file is allowed
+        if not allowed_file(video.filename):
+            return jsonify({'message': 'Invalid video file type.'}), 400
+
+        # Generate blob path for the video
+        video_blob_path = generate_blob_path(video)
+        
+        # Get a blob client for the video
+        video_blob_client = container_client.get_blob_client(video_blob_path)
+        
+        # Upload the video file
+        video_blob_client.upload_blob(
+            video.stream,
+            overwrite=True,
+            content_settings=ContentSettings(content_type='video/mp4')  # Assuming MP4 for videos
+        )
+
+        # Generate the URL for the uploaded video
+        video_url = f"https://<your-account-name>.blob.core.windows.net/{container_name}/{video_blob_path}"
+
+        return jsonify({
+            'message': 'Video uploaded successfully.',
+            'video_url': video_url
+        }), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({'message': f'Failed to upload video: {str(e)}'}), 500
+    
+@user_blueprint.route('/get-video/<user_id>/<video_name>', methods=['GET'])
+@token_required
+def get_video(user_id, video_name):
+    try:
+        # Generate the blob path based on user_id and video_name
+        video_blob_path = f"videos/{user_id}/{video_name}"
+        
+        # Check if the blob exists
+        video_blob_client = container_client.get_blob_client(video_blob_path)
+        if not video_blob_client.exists():
+            return jsonify({'message': 'Video not found.'}), 404
+
+        # Generate the video URL
+        video_url = f"https://<your-account-name>.blob.core.windows.net/{container_name}/{video_blob_path}"
+
+        return jsonify({
+            'message': 'Video retrieved successfully.',
+            'video_url': video_url
+        }), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({'message': f'Failed to retrieve video: {str(e)}'}), 500
+
