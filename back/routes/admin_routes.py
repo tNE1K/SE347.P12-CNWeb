@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from utils.token_utils import token_required
 from models.user_model import User
 from models.teacher_model import Teacher
+
 
 admin_blueprint = Blueprint("/admin", __name__)
 
@@ -48,3 +49,24 @@ def get_teache_request(payload):
         return jsonify({"data": users_json})
     else:
         return jsonify({"message": "No privillage"})
+    
+@admin_blueprint.route("/accept_teacher", methods=["POST"])
+@token_required
+def accept_teacher(payload):
+    if verify_admin(payload):
+        data = request.get_json()
+        Teacher.verify_teacher(data["_id"])
+        return jsonify({"message": "Teacher verified"})
+    else:
+        return jsonify({"message": "No privillage"})
+    
+@admin_blueprint.route("/decline_teacher", methods=["POST"])
+@token_required
+def decline_teacher(payload):
+    if verify_admin(payload):
+        data = request.get_json()
+        Teacher.decline_teacher(data["_id"])
+        return jsonify({"message": "Teacher declined"})
+    else:
+        return jsonify({"message": "No privillage"})
+    
