@@ -11,9 +11,10 @@ export const getAllCourse = (
   label: string = "",
   priceFrom: number = 0,
   priceTo: number = 10000000,
+  teacherId: string = "",
 ) =>
   request.get<ResponseApi<ICourse[]>>(
-    `/course?page=${page}&limit=${limit}&order=${sortBy}&keyword=${keyword}&rating=${rating}&label=${label}&priceFrom=${priceFrom}&priceTo=${priceTo}`,
+    `/course?page=${page}&limit=${limit}&order=${sortBy}&keyword=${keyword}&rating=${rating}&label=${label}&priceFrom=${priceFrom}&priceTo=${priceTo}&teacher_id=${teacherId}`,
   );
 export const getCourseById = (courseId: string) =>
   request.get<ResponseApi<ICourse>>(`/course/${courseId}`);

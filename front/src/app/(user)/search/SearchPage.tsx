@@ -52,10 +52,10 @@ export default function SearchPage() {
 
   return (
     <div className="flex gap-4 p-8">
-      <div className="basis-[20%]">
+      <div className="basis-[22%]">
         <FilterBar setSearchFilter={setSearchFilter} />
       </div>
-      <div className="basis-[80%]">
+      <div className="basis-[78%]">
         {courses.length > 0 && (
           <div className="min-h-[500px]">
             <div className="mb-4 flex justify-between">
