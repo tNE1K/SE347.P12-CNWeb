@@ -19,8 +19,15 @@ import eventlet
 app = Flask(__name__)
 app.config.from_object(Config)
 
-socketio = SocketIO(app, cors_allowed_origins="*", cors_credentials=True)
-CORS(app, supports_credentials=True, origins=["http://"+Config.API+":3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+socketio = SocketIO(app, cors_allowed_origins="*", 
+                    ping_interval=25,  # Seconds between pings
+                    ping_timeout=60,    # Timeout for ping response
+                    reconnect=True,    # Enable auto reconnection
+                    reconnection_attempts=5,  # Number of reconnection attempts
+                    reconnection_delay=2,  # Delay before retrying reconnect
+                    reconnection_delay_max=10)  # Max delay between reconnect attempts
+
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")

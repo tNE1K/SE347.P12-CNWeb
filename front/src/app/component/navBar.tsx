@@ -71,7 +71,6 @@ export default function NavBar() {
     <div>
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
         <Logo/>
-
         <Box className="w-[200px]">
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Course</InputLabel>
@@ -120,14 +119,19 @@ export default function NavBar() {
           )}
         </div>
 
-        <Button
-            variant="outlined"
-            onClick={() => {
+        
+            {isAuthenticated && (
+            <Button
+              variant="contained"
+              sx={{ textTransform: "none" }}
+              onClick={() => {
               router.push("/chat");
-            }}
-          >
-            Chat
-          </Button>
+              }}
+              className=""
+            >
+              Chat
+            </Button>
+            )}
 
         <div>
           {!isAuthenticated ? (
