@@ -69,11 +69,11 @@ def get_chat_list(payload):
     user_id = payload.get('user_id')
     if not user_id:
         return jsonify({"error": "User ID is required"}), 400
-
     try:
         user_chats = Chat.find({
-            "participants.0": user_id
+            "participants": user_id
         })
+        print("user_chats: ", user_chats)
         chat_list = []
         for chat in user_chats:
             last_message = chat.get('lastMessage', {})
@@ -82,11 +82,14 @@ def get_chat_list(payload):
                 if timestamp:
                     last_message['timestamp'] = timestamp.isoformat() if hasattr(timestamp, 'isoformat') else timestamp
 
+            sender = chat['participants'][0] if chat['participants'][0] == user_id else chat['participants'][1]
+            receiver = chat['participants'][1] if chat['participants'][0] == user_id else chat['participants'][0]
+
             chat_data = {
                 "id": str(chat['_id']),
                 "participants": {
-                    "sender": chat['participants'][0],  # người tạo chat
-                    "receiver": chat['participants'][1] if len(chat['participants']) > 1 else None  # người nhận
+                    "sender": sender,  # người tạo chat
+                    "receiver": receiver  # người nhận
                 },
                 "isGroupChat": chat.get('isGroupChat', False),
                 "lastMessage": {
@@ -126,7 +129,7 @@ def get_chat_messages(payload):
         for message in messages:
             formatted_message = {
                 "id": str(message['_id']),
-                "sender": message['sender'],
+                "sender": message['sender'],    
                 "recipient": message['recipient'],
                 "content": message['content'],
                 "timestamp": message['timestamp'].isoformat() if hasattr(message['timestamp'], 'isoformat') else message['timestamp']
