@@ -17,7 +17,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Box from "@mui/material/Box";
 import { useAuth } from "@/app/component/authProvider";
-import { Logout, Settings } from "@mui/icons-material";
+import { Logout, ManageSearch, Settings } from "@mui/icons-material";
 import SearchBox from "./searchBox";
 import { labels } from "../utils/labels";
 import SearchIcon from "@mui/icons-material/Search";
@@ -59,6 +59,9 @@ export default function NavBar() {
   
   const handleNavigateSearchPage = () => {
     router.push(`/search?kw=${keyword}&label=${category}`);
+  };
+  const handleNavigateManagePage = () => {
+    
   };
 
   return (
@@ -107,6 +110,18 @@ export default function NavBar() {
             className=""
           >
             Search
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<ManageSearch />}
+            sx={{ textTransform: "none" }}
+            onClick={() => {
+              handleNavigateManagePage();
+            }}
+            className=""
+          >
+            Manage Course
           </Button>
         </div>
 
