@@ -7,12 +7,14 @@ from models.lesson_model import Lesson
 from models.course_model import Course
 import os
 import json 
+import math
 course_blueprint = Blueprint('course', __name__)
 
 # MongoDB client setup (replace with your connection details)
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client['backend']
 courses_collection = db['courses']  
+users_collection = db['users']  
 def parse_json(data):
     """
     Recursively parse JSON data and convert all ObjectId fields to string.
@@ -292,3 +294,54 @@ def get_course_count_stats(teacher_id):
 
     except Exception as e:
         return jsonify({"message": "Error retrieving data", "error": str(e)}), 500
+@course_blueprint.route('/get-user-enroll-course/<user_id>', methods=['GET'])
+def get_user_enroll_course(user_id):
+    try:
+        # Fetch user by ID
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return jsonify({'message': 'User not found.'}), 404
+
+        # Get the list of enrolled course IDs
+        participated_courses = user.get("participatedCourses", [])
+        if not participated_courses:
+            return jsonify({'message': 'No enrolled courses found for this user.', 'courses': []}), 200
+
+        # Get pagination parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+        total_courses = len(participated_courses)
+        total_pages = math.ceil(total_courses / limit)
+
+        # Validate page and limit
+        if page < 1 or limit < 1:
+            return jsonify({'message': 'Invalid pagination parameters.'}), 400
+
+        # Apply pagination to the course IDs
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+        paginated_course_ids = participated_courses[start_index:end_index]
+
+        # Fetch course details for the paginated IDs
+        enrolled_courses = []
+        for course_id in paginated_course_ids:
+            course, error = Course.get_one(course_id)
+            if course:
+                enrolled_courses.append(course)
+            else:
+                print(f"Error fetching course {course_id}: {error}")
+
+        return jsonify({
+            'message': 'Enrolled courses retrieved successfully.',
+            'data': parse_json(enrolled_courses),
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total_items': total_courses,
+                'total_pages': total_pages
+            }
+        }), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({'message': f'Failed to retrieve enrolled courses: {str(e)}'}), 500

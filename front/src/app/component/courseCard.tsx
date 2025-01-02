@@ -14,7 +14,13 @@ function formatToVND(amount: number): string {
   return `${amount.toLocaleString("vi-VN")} đ`;
 }
 
-export default function CourseCard({ course }: { course?: ICourse }) {
+export default function CourseCard({
+  course,
+  isLearning = false,
+}: {
+  course?: ICourse;
+  isLearning?: boolean;
+}) {
   const router = useRouter(); // Khởi tạo useRouter
 
   const handleViewCourse = () => {
@@ -22,7 +28,11 @@ export default function CourseCard({ course }: { course?: ICourse }) {
       router.push(`/course/${course._id}`); // Điều hướng đến trang chi tiết
     }
   };
-
+  const handleLearnCourse = () => {
+    if (course?._id) {
+      router.push(`/learning/${course._id}`); // Điều hướng đến trang chi tiết
+    }
+  };
   return (
     <Card
       sx={{
@@ -84,9 +94,16 @@ export default function CourseCard({ course }: { course?: ICourse }) {
           />
         </div>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-          <Button size="small" color="primary" onClick={handleViewCourse}>
-            View
-          </Button>
+          {!isLearning && (
+            <Button size="small" color="primary" onClick={handleViewCourse}>
+              View
+            </Button>
+          )}
+          {isLearning && (
+            <Button size="small" color="primary" onClick={handleLearnCourse}>
+              Learn
+            </Button>
+          )}
         </div>
       </CardActions>
     </Card>
