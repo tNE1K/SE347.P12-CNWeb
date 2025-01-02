@@ -42,8 +42,16 @@ class Teacher:
         
     @staticmethod
     def get_teacher_request():
-        user = user_collection.find({"teacherVerifyRequest": True})
-        user_list = [doc for doc in user]
-        for user in user_list:
+        user_cursor = user_collection.find({"teacherVerifyRequest": True})
+        user_list = []
+        for user in user_cursor:
             user["_id"] = str(user["_id"])
+            user_list.append({
+                "id": user["_id"],
+                "email": user.get("email"),
+                "firstName": user.get("firstName"),
+                "lastName": user.get("lastName"),
+                "birthday": user.get("birthday"),
+                "verifyImage": user.get("verifyImage")
+            })
         return user_list

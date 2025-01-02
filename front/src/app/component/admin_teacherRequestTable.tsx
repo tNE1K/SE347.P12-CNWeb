@@ -1,15 +1,16 @@
 import { fetchAllTeacherRequest } from "@/app/api/admin";
-import { Button, Paper } from "@mui/material";
+import { Button, Dialog, DialogContent, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import axios from 'axios';
 import { useEffect, useState } from "react";
 
-const handleAccept = async (id: string) => {
+export default function TeacherRequestTable() {
+  const handleAccept = async (id: string) => {
   console.log("Test:", id);
   try {
     const response = await axios.post('http://127.0.0.1:5000/admin/accept_teacher', 
-            { _id: id },  // Pass the correct property named "_id"
-            { withCredentials: true }  // Move `withCredentials` here
+            { _id: id },
+            { withCredentials: true }
     );
     console.log('Accepted:', response.data);
   } catch (error) {
@@ -17,15 +18,13 @@ const handleAccept = async (id: string) => {
   }
 };
 
-
 const handleDecline = async (id: string) => {
   console.log("Test:", id);
   try {
     const response = await axios.post('http://127.0.0.1:5000/admin/decline_teacher',
-      { _id: id },  // Pass the correct property named "_id"
-      { withCredentials: true }  // Move `withCredentials` here
+      { _id: id },
+      { withCredentials: true }
     );
-
     console.log('Declined:', response.data);
   } catch (error) {
     console.error('Error accepting request:', error);
@@ -33,26 +32,58 @@ const handleDecline = async (id: string) => {
 };
 
 const columns: GridColDef[] = [
-  { field: "index", headerName: "Index", width: 200 },
-  { field: "_id", headerName: "ID", width: 200 },
-  { field: "email", headerName: "Email", width: 250 },
-  { field: "role", headerName: "Role", width: 150 },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 200,
-    renderCell: (params) => (
-      <div>
-        <Button onClick={() => handleAccept(params.row._id)}>Accept</Button>
-        <Button onClick={() => handleDecline(params.row._id)}>Decline</Button>
-      </div>
-    ),
-  },
-];
-
-export default function TeacherRequestTable() {
+    { field: "index", headerName: "Index", width: 100 },
+    { field: "_id", headerName: "ID", width: 200 },
+    { field: "email", headerName: "Email", width: 250 },
+    { field: "role", headerName: "Role", width: 150 },
+    {
+      field: "image",
+      headerName: "Images",
+      width: 150,
+      renderCell: (params) => (
+        <div style={{ display: "flex", gap: "5px" }}>
+          {params.row.verifyImage && params.row.verifyImage.map((url: string, index: number) => (
+            <img
+              key={index}
+              onClick={() => handleImageClick(url)}
+              src={url}
+              alt={`Verification ${index + 1}`}
+              style={{ width: "50px", height: "50px", objectFit: "cover", cursor: "pointer" }}
+            />
+          ))}
+        </div>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params) => (
+        <div>
+          <Button 
+            onClick={() => {
+              handleAccept(params.row._id);
+            }}
+          >
+            Accept
+          </Button>
+          <Button 
+            onClick={() => {
+              handleDecline(params.row._id);
+            }}
+          >
+            Decline
+          </Button>
+        </div>
+      ),
+    }
+  ];
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // State for dialog
+  const [openDialog, setOpenDialog] = useState(false);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -61,9 +92,10 @@ export default function TeacherRequestTable() {
         const formattedData = data.data.map((user: any, index: number) => ({
           id: index + 1,
           index: index + 1,
-          _id: user._id,
+          _id: user.id,
           email: user.email,
           role: user.role,
+          verifyImage: user.verifyImage
         }));
         setRows(formattedData);
       } catch (error) {
@@ -75,6 +107,18 @@ export default function TeacherRequestTable() {
     loadData();
   }, []);
 
+  const handleImageClick = (url: string) => {
+    setCurrentImage(url);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setCurrentImage(null);
+  };
+
+  
+
   return (
     <Paper sx={{ height: "100%", width: "100%" }}>
       <DataGrid
@@ -84,6 +128,12 @@ export default function TeacherRequestTable() {
         pageSizeOptions={[5, 10]}
         sx={{ border: 0 }}
       />
+      
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogContent>
+          {currentImage && <img src={currentImage} alt="Full Image" style={{ width: "100%", height: "auto" }} />}
+        </DialogContent>
+      </Dialog>
     </Paper>
   );
 }

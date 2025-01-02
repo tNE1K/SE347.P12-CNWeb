@@ -72,6 +72,11 @@ class User:
         )
         
     @staticmethod
+    def update_verify_images(id, verify_images):
+        return user_collection.update_one(
+            {"_id": ObjectId(id)}, {"$set": {"verifyImage": verify_images}})
+        
+    @staticmethod
     def decline_verify_request(id):
         return user_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": {"teacherVerifyRequest": False}}

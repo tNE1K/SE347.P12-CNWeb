@@ -1,5 +1,6 @@
 "use client";
 import {
+  Avatar,
   Button,
   Card,
   CardActions,
@@ -15,6 +16,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { sendVerifyDocument } from "../api/teacher";
@@ -25,6 +27,7 @@ interface BirthdatePickProps {
 }
 
 const InfoCard: React.FC = () => {
+  const Router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isVerifySent, setIsVerifySent] = useState(false);
   const [open, setOpen] = useState(false);
@@ -81,6 +84,7 @@ const InfoCard: React.FC = () => {
     });
     formData.append("id_img", idFile);
     await sendVerifyDocument(formData, handleClose);
+    Router.refresh();
   };
 
   const handleEditClick = () => {
@@ -114,9 +118,11 @@ const InfoCard: React.FC = () => {
   return (
     <Card className="w-full shadow-lg rounded-lg overflow-hidden">
       <CardContent className="flex flex-col gap-4">
-        <Typography variant="h3" className="font-bold text-center">
-          Your Information
-        </Typography>
+        <div className="flex flex-col items-center gap-4">
+          <Typography variant="h5" children={userInfo.firstName + " " +  userInfo.lastName} className="font-bold text-center">
+          </Typography>
+          <Avatar src="" className="flex"/>
+        </div>
         <div className="flex flex-row gap-8 w-full">
           <div className="flex flex-col gap-2 w-1/2">
             <Typography variant="h5" component="div" className="font-semibold">
@@ -203,8 +209,10 @@ const InfoCard: React.FC = () => {
             type="file"
             inputProps={{
               accept: "image/*",
-              multiple: true,
             }}
+            InputLabelProps={{
+              shrink: true,
+                }}
             onChange={handleCertificateChange}
             fullWidth
             margin="dense"
@@ -216,6 +224,9 @@ const InfoCard: React.FC = () => {
             inputProps={{
               accept: "image/*",
             }}
+            InputLabelProps={{
+              shrink: true,
+                }}
             onChange={handleIdChange}
             fullWidth
             margin="dense"
