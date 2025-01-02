@@ -1,15 +1,15 @@
 "use client";
-import { Typography } from "@mui/material";
-import React from "react";
-import StatBox from "./StatBox";
-import GroupsIcon from "@mui/icons-material/Groups";
-import { useQuery } from "@tanstack/react-query";
 import { getCourseCount, getUserEnrollCount } from "@/app/api/course";
 import { useAuth } from "@/app/component/authProvider";
-import MonthlyUserChart from "./UserEnrollCourseChart";
-import CourseCountChart from "./CourseCountChart";
+import { RoleCheck } from "@/app/component/roleCheck";
+import GroupsIcon from "@mui/icons-material/Groups";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-export default function TeacherDashboard() {
+import { Typography } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import CourseCountChart from "./CourseCountChart";
+import StatBox from "./StatBox";
+import MonthlyUserChart from "./UserEnrollCourseChart";
+export function TeacherDashboard() {
   const { user } = useAuth();
   const { data } = useQuery({
     queryKey: ["usersEnroll", { teacherId: user?.id }],
@@ -61,3 +61,5 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
+export default RoleCheck(TeacherDashboard, "teacher");

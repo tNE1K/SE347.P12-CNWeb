@@ -1,7 +1,7 @@
 "use client";
+import { fetchUserInfo } from "@/app/api/user";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import { fetchInfo } from "@/app/api/user";
 
 export const RoleCheck = (
   Component: React.ComponentType,
@@ -13,7 +13,8 @@ export const RoleCheck = (
     useEffect(() => {
       const checkRole = async () => {
         try {
-          const response = await fetchInfo();
+          const response = await fetchUserInfo();
+          console.log(response)
           if (response) {
             const { role } = response;
             if (role !== allowedRole) {

@@ -3,7 +3,7 @@ import React from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/app/component/authProvider";
-// import QueryProviders from "./provider";
+import QueryProviders from "./provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,24 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // <html lang="en">
-    //   <body>
-    //     <AuthProvider>
-    //       <QueryProviders>
-    //         <div className={`${geistSans.variable} ${geistMono.variable}`}>
-    //           {children}
-    //         </div>
-    //       </QueryProviders>
-    //     </AuthProvider>
-    //     <ToastContainer />
-    //   </body>
-    // </html>
     <html lang="en">
       <body>
         <AuthProvider>
+          <QueryProviders>
             <div className={`${geistSans.variable} ${geistMono.variable}`}>
               {children}
             </div>
+          </QueryProviders>
         </AuthProvider>
         <ToastContainer />
       </body>

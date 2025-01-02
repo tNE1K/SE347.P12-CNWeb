@@ -4,8 +4,7 @@ from models.user_model import User
 import os
 import uuid
 from azure.storage.blob import BlobServiceClient, ContentSettings
-from config import Config  # Assuming this has your Azure connection string setup
-import jwt
+from config import Config
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 
@@ -95,6 +94,9 @@ def get_info(payload):
                 "lastName": user["lastName"],
                 "birthday": user["birthday"],
                 "teacherVerifyRequest": user["teacherVerifyRequest"],
+                "role": user["role"],
+                "id": str(user["_id"]),
+                "isVerify": user["isVerify"]
             }), 200
 
 @user_blueprint.route('/update', methods=['POST'])

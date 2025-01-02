@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatList from "./components/ChatList";
 import ChatWindow from "./components/ChatWindow";
 import MessageInput from "./components/MessageInput";
@@ -27,6 +27,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [userDetail, setUserDetail] = useState<UserDetail>();
+  const messagesEndRef = useRef(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function ChatPage() {
 
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/auth/me", {
+        const response = await fetch(`${process.env.MY_API_URL}/auth/me`, {
           method: "GET",
           credentials: "include",
         });
@@ -93,7 +94,7 @@ export default function ChatPage() {
   const fetchMessages = async (chat_id: string) => {
     if (!user) return;
     try {
-      const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
+      const response = await fetch(`${process.env.MY_API_URL}/chat/messages?chat_id=${chat_id}`, {
         method: "GET",
         credentials: "include",
       });

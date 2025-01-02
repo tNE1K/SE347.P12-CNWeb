@@ -16,7 +16,6 @@ from config import Config
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import eventlet
-
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -48,4 +47,5 @@ app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
 # app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
 if __name__ == "__main__":
-    socketio.run(app, host="127.0.0.1", port=5000, debug=True)
+    # app.run(debug=True)
+    socketio.run(app, host = Config.API, port=5000, debug=True)
