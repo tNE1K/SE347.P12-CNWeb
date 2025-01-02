@@ -7,6 +7,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import InfoCard from "./infoCard";
+import UserCourse from "./userCourse";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -29,9 +30,7 @@ function TabPanel(props: TabPanelProps) {
       {value === index && (
         <Box sx={{ p: 3 }}>
           <Container>
-            <Box>
-              {children}
-            </Box>
+            <Box>{children}</Box>
           </Container>
         </Box>
       )}
@@ -42,7 +41,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: number) {
   return {
     id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`
+    "aria-controls": `vertical-tabpanel-${index}`,
   };
 }
 
@@ -66,10 +65,10 @@ export default function UserTabs() {
         <Tab label="Courses" {...a11yProps(1)} icon={<MenuBookIcon/>} iconPosition="start"/>
       </Tabs>
       <TabPanel value={value} index={0}>
-        <InfoCard/>
+        <InfoCard />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        <UserCourse />
       </TabPanel>
     </Box>
   );
