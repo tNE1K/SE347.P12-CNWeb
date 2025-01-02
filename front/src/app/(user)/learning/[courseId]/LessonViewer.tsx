@@ -12,16 +12,41 @@ import ReactPlayer from "react-player";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { answerTestSelection } from "@/app/api/lesson";
+import { toast } from "react-toastify";
+import { createUserLesson } from "@/app/api/course";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useAuth } from "@/app/component/authProvider";
 
 export default function LessonViewer({ lesson }: { lesson: ILesson }) {
   const quizzes: ISelectionLesson[] =
     lesson?.type === "testselection"
       ? (lesson?.resource as ISelectionLesson[])
       : [];
+  const params = useParams<{ courseId: string }>();
+  const { user } = useAuth();
   const [curQuiz, setCurQuiz] = useState(0);
   const [correct, setCorrect] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [showExplan, setShowExplan] = useState(false);
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: (body: {
+      courseId: string;
+      lessonId: string;
+      userId: string;
+    }) => {
+      return createUserLesson(body.courseId, body.lessonId, body.userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["course-progress"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error?.message || "Something went wrong"}`);
+    },
+  });
   // State to store the selected answers for each quiz
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
 
@@ -48,7 +73,7 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
       );
 
       const allCorrect = results.every((isCorrect) => isCorrect === true);
-
+      if (allCorrect) handleCompleteLesson();
       setCorrect(allCorrect);
       setShowResult(true);
       setShowExplan(true);
@@ -56,7 +81,17 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
       console.error("Error submitting answers:", error);
     }
   };
-
+  const handleCompleteLesson = async () => {
+    if (!user) {
+      toast.error(`Pls login to complete this lesson`);
+      return;
+    }
+    mutate({
+      courseId: params.courseId,
+      lessonId: lesson._id,
+      userId: user.id,
+    });
+  };
   return (
     <div>
       {lesson.type === "video" && (
@@ -65,6 +100,7 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
             width={`100%`}
             height={500}
             muted={true}
+            onEnded={() => handleCompleteLesson()}
             playing={true}
             style={{ backgroundColor: "#000" }}
             controls={true}

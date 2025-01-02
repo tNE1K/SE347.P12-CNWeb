@@ -78,8 +78,8 @@ export default AddCourseButton;
 
 function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
   const theme = useTheme();
-  const queryClient = useQueryClient();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate } = useMutation({
     mutationFn: (newCourseData: FormData) => {
       return createCourse(newCourseData);

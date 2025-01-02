@@ -9,6 +9,7 @@ from routes.payment_routes import payment_blueprint
 from routes.teacher_routes import teacher_blueprint
 from routes.comment_routes import comments_blueprint
 from routes.media_routes import media_blueprint
+from routes.userlesson_routes import userlesson_blueprint
 # from routes.upload_routes import upload_blueprint
 from config import Config
 from flask_cors import CORS
@@ -28,6 +29,7 @@ app.register_blueprint(payment_blueprint, url_prefix="/payment")
 app.register_blueprint(teacher_blueprint, url_prefix="/teacher")
 app.register_blueprint(comments_blueprint, url_prefix="/comment")
 app.register_blueprint(media_blueprint, url_prefix="/media")
+app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
 # app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
 if __name__ == "__main__":

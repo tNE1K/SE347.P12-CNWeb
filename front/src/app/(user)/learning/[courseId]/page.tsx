@@ -4,12 +4,14 @@ import React, { useEffect, useState } from "react";
 import LessonList from "./LessonList";
 import LessonViewer from "./LessonViewer";
 import { useQuery } from "@tanstack/react-query";
-import { getCourseById } from "@/app/api/course";
+import { getCourseById, getCourseProgress } from "@/app/api/course";
 import { useSearchParams } from "next/navigation";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import LessonInfo from "./LessonInfo";
+import { useAuth } from "@/app/component/authProvider";
 export default function page() {
   const params = useParams<{ courseId: string }>();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const [lessonSlt, setLessonSlt] = useState(0);
   const [showLessonList, setShowLessonList] = useState(true);
@@ -18,6 +20,15 @@ export default function page() {
     queryKey: ["course-detail", { courseId: params.courseId }],
     queryFn: () => getCourseById(params.courseId),
   });
+  const { data: progressRes } = useQuery({
+    queryKey: ["course-progress", {}],
+    queryFn: () => {
+      if (!user?.id) return Promise.resolve(null);
+      return getCourseProgress(params.courseId, user.id);
+    },
+    enabled: !!user?.id,
+  });
+  const progress = progressRes?.data || [];
   const course = data?.data || undefined;
   const lessons = course?.lessonIds;
 
@@ -40,6 +51,7 @@ export default function page() {
             <LessonList
               setShowLessonList={setShowLessonList}
               lessons={lessons}
+              progress={progress}
               lessonSlt={lessonSlt}
             />
           )}
