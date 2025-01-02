@@ -1,28 +1,30 @@
 "use client";
 import { getAllCourse } from "@/app/api/course";
-import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import { useAuth } from "@/app/component/authProvider";
+import { RoleCheck } from "@/app/component/roleCheck";
+import { convertISOToDate } from "@/app/utils/coverter";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Pagination } from "@mui/material";
+import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { convertISOToDate } from "@/app/utils/coverter";
-import AddCourseButton from "./components/AddCourseModal";
-import { Pagination } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useAuth } from "@/app/component/authProvider";
+import { useState } from "react";
+import AddCourseButton from "./components/AddCourseModal";
+
 const LIMIT = 4;
 function formatToVND(amount: number): string {
   return `${amount.toLocaleString("vi-VN")} đ`;
 }
 
-export default function CoursesPage() {
+export function CoursesPage() {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("-createdAt");
   const { user } = useAuth();
@@ -173,3 +175,5 @@ export default function CoursesPage() {
     </div>
   );
 }
+
+export default RoleCheck(CoursesPage, "teacher");
