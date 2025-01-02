@@ -65,6 +65,8 @@ export default function NavBar() {
     router.push('/teacher/courses');
   };
 
+  const isTeacher = user?.role === 'teacher';
+
   return (
     <div>
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
@@ -106,17 +108,16 @@ export default function NavBar() {
             Search
           </Button>
 
-          <Button
-            variant="contained"
-            startIcon={<ManageSearch />}
-            sx={{ textTransform: "none" }}
-            onClick={() => {
-              handleNavigateManagePage();
-            }}
-            className=""
-          >
-            Manage Course
-          </Button>
+          {isTeacher && (
+            <Button
+              variant="contained"
+              startIcon={<ManageSearch />}
+              sx={{ textTransform: "none" }}
+              onClick={handleNavigateManagePage}
+            >
+              Manage Course
+            </Button>
+          )}
         </div>
 
         <Button
