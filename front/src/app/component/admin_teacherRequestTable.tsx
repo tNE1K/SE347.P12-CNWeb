@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const handleAccept = async (id: string) => {
   console.log("Test:", id);
   try {
-    const response = await axios.post('http://localhost:5000/admin/accept_teacher', 
+    const response = await axios.post('http://127.0.0.1:5000/admin/accept_teacher', 
             { _id: id },  // Pass the correct property named "_id"
             { withCredentials: true }  // Move `withCredentials` here
     );
@@ -21,7 +21,7 @@ const handleAccept = async (id: string) => {
 const handleDecline = async (id: string) => {
   console.log("Test:", id);
   try {
-    const response = await axios.post('http://localhost:5000/admin/decline_teacher',
+    const response = await axios.post('http://127.0.0.1:5000/admin/decline_teacher',
       { _id: id },  // Pass the correct property named "_id"
       { withCredentials: true }  // Move `withCredentials` here
     );

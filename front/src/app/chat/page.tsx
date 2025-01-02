@@ -113,7 +113,7 @@ export default function ChatPage() {
       const result = await response.json();
       if (result.status === "success" && result.data.messages) {
         setMessages(result.data.messages);
-      }
+        console.log("Messages fetched successfully", result.data.messages);       }
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
