@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { getCourseByLabel } from "../api/course";
 import { labels } from "../utils/labels";
+import Logo from "./logo";
 import SearchBox from "./searchBox";
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -67,14 +68,7 @@ export default function NavBar() {
   return (
     <div>
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
-        <div
-          onClick={() => {
-            router.push("http://localhost:3000");
-          }}
-          className="h-full select-none place-content-center pl-8 font-sans text-3xl font-bold text-black hover:cursor-pointer"
-        >
-          pro<span className="text-blue-600">c</span>ode
-        </div>
+        <Logo/>
 
         <Box className="w-[200px]">
           <FormControl fullWidth>
