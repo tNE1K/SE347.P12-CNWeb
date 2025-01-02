@@ -58,3 +58,11 @@ export interface CourseCount {
   status: string;
   totalCourses: number;
 }
+export interface IUserLesson {
+  _id: string;
+  course_id: string;
+  createdAt: string;
+  isCompleted: boolean;
+  lesson_id: string;
+  user_id: string;
+}

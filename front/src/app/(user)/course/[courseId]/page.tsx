@@ -53,7 +53,7 @@ export default function page() {
               <div className="flex">
                 <Rating
                   rating={course?.rating ? course.rating : 0}
-                  className="text-warning-500 h-[24px] w-[24px]"
+                  className="h-[24px] w-[24px] text-warning-500"
                 />
               </div>
               <p className="text-text/md/regular text-white">
@@ -76,9 +76,9 @@ export default function page() {
       <div className="flex gap-12 px-24 py-[24px]">
         <div className="w-[60%]">
           <div
-            className={`border-success-100 relative mt-4 w-full rounded-[12px] border-[4px]`}
+            className={`relative mt-4 w-full rounded-[12px] border-[4px] border-success-100`}
           >
-            <header className="bg-success-100 text-success-700 inline-block h-[48px] w-[240px] rounded-br-[4px] text-center text-lg font-semibold leading-[48px]">
+            <header className="inline-block h-[48px] w-[240px] rounded-br-[4px] bg-success-100 text-center text-lg font-semibold leading-[48px] text-success-700">
               Giới thiệu khóa học
             </header>
             <div
@@ -91,7 +91,7 @@ export default function page() {
               onClick={() => {
                 setShowMore((prev) => !prev);
               }}
-              className={`text-success-600 hover:text-success-700 absolute bottom-[1%] flex cursor-pointer items-center gap-1 px-[20px] transition-all`}
+              className={`absolute bottom-[1%] flex cursor-pointer items-center gap-1 px-[20px] text-success-600 transition-all hover:text-success-700`}
             >
               {showMore ? <p>Ẩn bớt</p> : <p>Xem thêm</p>}
               {showMore ? (

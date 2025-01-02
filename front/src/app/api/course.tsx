@@ -1,6 +1,7 @@
 import {
   CourseCount,
   ICourse,
+  IUserLesson,
   UpdateCoursePayload,
   UserEnrollCourseCount,
 } from "../types/course";
@@ -21,12 +22,8 @@ export const getAllCourse = (
   request.get<ResponseApi<ICourse[]>>(
     `/course?page=${page}&limit=${limit}&order=${sortBy}&keyword=${keyword}&rating=${rating}&label=${label}&priceFrom=${priceFrom}&priceTo=${priceTo}&teacher_id=${teacherId}`,
   );
-  export const getCourseByLabel = (
-    label: string
-  ) =>
-    request.get<ResponseApi<ICourse[]>>(
-      `/course?label=${label}`
-    );
+export const getCourseByLabel = (label: string) =>
+  request.get<ResponseApi<ICourse[]>>(`/course?label=${label}`);
 export const getCourseById = (courseId: string) =>
   request.get<ResponseApi<ICourse>>(`/course/${courseId}`);
 export const updateCourse = async (body: UpdateCoursePayload) => {
@@ -89,3 +86,17 @@ export const getCourseCount = async (teacherId?: string) =>
   request.get<Promise<CourseCount>>(
     `/course/get-course-count-stats/${teacherId}`,
   );
+export const getCourseProgress = async (courseId: string, userId: string) =>
+  request.get<ResponseApi<IUserLesson[]>>(
+    `/progress/get-course-progress?course_id=${courseId}&user_id=${userId}`,
+  );
+export const createUserLesson = async (
+  courseId: string,
+  lessonId: string,
+  userId: string,
+) =>
+  request.post<ResponseApi<IUserLesson>>(`/progress/create`, {
+    user_id: userId,
+    course_id: courseId,
+    lesson_id: lessonId,
+  });
