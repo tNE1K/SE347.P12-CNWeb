@@ -1,9 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
-import { useRouter } from "next/navigation";
-import Logo from "./logo";
+import { useAuth } from "@/app/component/authProvider";
+import { Logout, ManageSearch, Settings } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Avatar,
   Divider,
@@ -12,17 +10,19 @@ import {
   Menu,
   Tooltip,
 } from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Box from "@mui/material/Box";
-import { useAuth } from "@/app/component/authProvider";
-import { Logout, ManageSearch, Settings } from "@mui/icons-material";
-import SearchBox from "./searchBox";
-import { labels } from "../utils/labels";
-import SearchIcon from "@mui/icons-material/Search";
+import Button from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Link from "@mui/material/Link";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { getCourseByLabel } from "../api/course";
+import { labels } from "../utils/labels";
+import Logo from "./logo";
+import SearchBox from "./searchBox";
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -62,7 +62,7 @@ export default function NavBar() {
     router.push(`/search?kw=${keyword}&label=${category}`);
   };
   const handleNavigateManagePage = () => {
-    
+    router.push('/teacher/courses');
   };
 
   return (

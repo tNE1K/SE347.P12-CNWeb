@@ -3,6 +3,10 @@ export interface User {
   email: string;
   role: string;
   isVerify: boolean;
+  firstName: string;
+  lastName: string;
+  birthday: string;
+  teacherVerifyRequest: boolean;
 }
 
 export interface IUser {
