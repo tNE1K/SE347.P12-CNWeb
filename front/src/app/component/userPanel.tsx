@@ -1,10 +1,12 @@
 "use client";
-import * as React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
-import InfoCard from "./infoCard";
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import PersonIcon from '@mui/icons-material/Person';
 import { Container } from "@mui/material";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import * as React from "react";
+import InfoCard from "./infoCard";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -60,18 +62,14 @@ export default function UserTabs() {
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="User's info" {...a11yProps(0)} />
-        <Tab label="Courses" {...a11yProps(1)} />
-        <Tab label="Change information" {...a11yProps(2)} />
+        <Tab label="User's info" {...a11yProps(0)} icon={<PersonIcon/>} iconPosition="start"/>
+        <Tab label="Courses" {...a11yProps(1)} icon={<MenuBookIcon/>} iconPosition="start"/>
       </Tabs>
       <TabPanel value={value} index={0}>
         <InfoCard/>
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        Item Three
       </TabPanel>
     </Box>
   );
