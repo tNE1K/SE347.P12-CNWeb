@@ -33,7 +33,7 @@ export default function ChatPage() {
 
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch(`"${process.env.MY_API_URL}/auth/me"`, {
+        const response = await fetch(`${process.env.MY_API_URL}/auth/me`, {
           method: "GET",
           credentials: "include",
         });
@@ -56,7 +56,7 @@ export default function ChatPage() {
     if (!selectedChat || !user?.id) return;
 
     // Connect to socket server when a chat is selected
-    const socketConnection = io(`"${process.env.MY_API_URL}"`, {
+    const socketConnection = io(`${process.env.MY_API_URL}`, {
       query: { user_id: user.id, chat_id: selectedChat },
       withCredentials: true,
     });

@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 socketio = SocketIO(app, cors_allowed_origins="*", cors_credentials=True)
-CORS(app, supports_credentials=True, origins=[Config.API+":3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app, supports_credentials=True, origins=["http://"+Config.API+":3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
@@ -40,4 +40,5 @@ app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
 # app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
 if __name__ == "__main__":
-    socketio.run(app, host= Config.API, port=5000, debug=True)
+    # app.run(debug=True)
+    socketio.run(app, host = Config.API, port=5000, debug=True)

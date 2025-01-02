@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
-const baseURL = `"${process.env.MY_API_URL}"`;
-
+const baseURL = `${process.env.MY_API_URL}`;
+console.log(baseURL);
 const axiosInstance = axios.create({
   baseURL,
   withCredentials: true,

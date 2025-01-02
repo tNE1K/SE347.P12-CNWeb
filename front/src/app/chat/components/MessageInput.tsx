@@ -16,7 +16,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, sender, reci
       onSendMessage(message);
 
       try {
-        await fetch(`"${process.env.MY_API_URL}/chat/messages"`, {
+        await fetch(`${process.env.MY_API_URL}/chat/messages`, {
           method: "POST",
           credentials: "include",
           body: JSON.stringify({
