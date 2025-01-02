@@ -1,5 +1,6 @@
 "use client";
 import {
+  Avatar,
   Button,
   Card,
   CardActions,
@@ -114,9 +115,11 @@ const InfoCard: React.FC = () => {
   return (
     <Card className="w-full shadow-lg rounded-lg overflow-hidden">
       <CardContent className="flex flex-col gap-4">
-        <Typography variant="h3" className="font-bold text-center">
-          Your Information
-        </Typography>
+        <div className="flex flex-col items-center gap-4">
+          <Typography variant="h5" children={userInfo.firstName + " " +  userInfo.lastName} className="font-bold text-center">
+          </Typography>
+          <Avatar src="" className="flex"/>
+        </div>
         <div className="flex flex-row gap-8 w-full">
           <div className="flex flex-col gap-2 w-1/2">
             <Typography variant="h5" component="div" className="font-semibold">
