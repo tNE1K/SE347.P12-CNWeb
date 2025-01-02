@@ -100,3 +100,11 @@ export const createUserLesson = async (
     course_id: courseId,
     lesson_id: lessonId,
   });
+export const getUserEnrollCourse = async (
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+) =>
+  request.get<ResponseApi<ICourse[]>>(
+    `/course/get-user-enroll-course/${userId}?page=${page}&limt=${limit}`,
+  );

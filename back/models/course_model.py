@@ -39,7 +39,6 @@ class Course:
                 course["teacher"] = None  # Handle cases where teacher_id is missing
 
             return course, None
-            return course, None
         except Exception as e:
             return None, str(e)
     @staticmethod
