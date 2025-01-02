@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
 import { useRouter } from "next/navigation";
+import Logo from "./logo";
 import {
   Avatar,
   Divider,
@@ -67,14 +68,7 @@ export default function NavBar() {
   return (
     <div>
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
-        <div
-          onClick={() => {
-            router.push("http://localhost:3000");
-          }}
-          className="h-full select-none place-content-center pl-8 font-sans text-3xl font-bold text-black hover:cursor-pointer"
-        >
-          pro<span className="text-blue-600">c</span>ode
-        </div>
+        <Logo/>
 
         <Box className="w-[200px]">
           <FormControl fullWidth>
