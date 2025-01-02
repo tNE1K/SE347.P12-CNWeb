@@ -11,7 +11,7 @@ const columns: GridColDef[] = [
 ];
 
 const fetchAllUsers = async () => {
-  const response = await axios.get("http://127.0.0.1:5000/admin/get_all_user", {
+  const response = await axios.get(`${process.env.MY_API_URL}/admin/get_all_user`, {
     withCredentials: true,
   });
   return response.data.data.map((user: any, index: number) => ({
