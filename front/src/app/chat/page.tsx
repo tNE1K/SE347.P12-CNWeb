@@ -33,7 +33,7 @@ export default function ChatPage() {
 
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/auth/me", {
+        const response = await fetch(`"${process.env.MY_API_URL}/auth/me"`, {
           method: "GET",
           credentials: "include",
         });
@@ -56,7 +56,7 @@ export default function ChatPage() {
     if (!selectedChat || !user?.id) return;
 
     // Connect to socket server when a chat is selected
-    const socketConnection = io("http://127.0.0.1:5000", {
+    const socketConnection = io(`"${process.env.MY_API_URL}"`, {
       query: { user_id: user.id, chat_id: selectedChat },
       withCredentials: true,
     });
@@ -101,7 +101,7 @@ export default function ChatPage() {
   const fetchMessages = async (chat_id: string) => {
     if (!user) return;
     try {
-      const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
+      const response = await fetch(`${process.env.MY_API_URL}/chat/messages?chat_id=${chat_id}`, {
         method: "GET",
         credentials: "include",
       });

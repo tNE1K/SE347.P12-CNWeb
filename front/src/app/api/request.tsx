@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
-const baseURL = "http://127.0.0.1:5000";
+const baseURL = `"${process.env.MY_API_URL}"`;
 
 const axiosInstance = axios.create({
   baseURL,
