@@ -3,7 +3,14 @@ import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
 import { useRouter } from "next/navigation";
-import { Avatar, Divider, IconButton, ListItemIcon, Menu, TextField, Tooltip } from "@mui/material";
+import {
+  Avatar,
+  Divider,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  Tooltip,
+} from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -11,14 +18,19 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Box from "@mui/material/Box";
 import { useAuth } from "@/app/component/authProvider";
 import { Logout, Settings } from "@mui/icons-material";
-
+import SearchBox from "./searchBox";
+import { labels } from "../utils/labels";
+import SearchIcon from "@mui/icons-material/Search";
+import { getCourseByLabel } from "../api/course";
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [searchField, setSearchField] = useState<string>("");
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const [keyword, setKeyword] = useState("");
+  const [category, setCategory] = useState("");
+  const [courses, setCourses] = useState<any[]>([]);
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -26,11 +38,28 @@ export default function NavBar() {
   const router = useRouter();
   const [courseType, setCourseType] = React.useState("");
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setCourseType(event.target.value as string);
+  const handleChange = async (event: SelectChangeEvent) => {
+    const selectedLabel = event.target.value;
+    setCourseType(selectedLabel); // Store the selected label in state
+    setCategory(selectedLabel); // Update the category state
+  
+    console.log(selectedLabel);
+  
+    // Call the API to fetch courses with the selected label
+    try {
+      const response = await getCourseByLabel(selectedLabel);
+      setCourses(response.data); // Assuming the API returns the list of courses
+      console.log(response.data);
+      router.push(`/search?kw=&label=${selectedLabel}`);
+      
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
   };
-
-  console.log(isAuthenticated);
+  
+  const handleNavigateSearchPage = () => {
+    router.push(`/search?kw=${keyword}&label=${category}`);
+  };
 
   return (
     <div>
@@ -44,7 +73,7 @@ export default function NavBar() {
           pro<span className="text-blue-600">c</span>ode
         </div>
 
-        <Box className="w-1/4">
+        <Box className="w-[200px]">
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Course</InputLabel>
             <Select
@@ -54,21 +83,32 @@ export default function NavBar() {
               label="Course"
               onChange={handleChange}
             >
-              <MenuItem value={10}>Web development</MenuItem>
-              <MenuItem value={20}>Game development</MenuItem>
-              <MenuItem value={30}>Others</MenuItem>
+              <MenuItem onClick={() => setCategory("")} value={""}>
+                Chọn tất cả
+              </MenuItem>
+              {labels.map((label, idx) => (
+                <MenuItem value={label} key={idx}>
+                  {label}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Box>
 
-        <TextField
-          id="outlined-search"
-          label="Find your course"
-          type="search"
-          className={"w-1/4"}
-          value={searchField}
-          onChange={(e) => setSearchField(e.target.value)}
-        />
+        <div className="flex w-1/3 gap-4">
+          <SearchBox setKeyword={setKeyword} />
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            sx={{ textTransform: "none" }}
+            onClick={() => {
+              handleNavigateSearchPage();
+            }}
+            className=""
+          >
+            Search
+          </Button>
+        </div>
 
         <Button
             variant="outlined"
@@ -96,7 +136,7 @@ export default function NavBar() {
                   display: "flex",
                   alignItems: "center",
                   textAlign: "center",
-                  marginRight: "10px"
+                  marginRight: "10px",
                 }}
               >
                 <Tooltip title="Account settings">

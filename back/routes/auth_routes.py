@@ -115,7 +115,7 @@ def signup():
 def logout():
     response = jsonify({"message": "Logout successful"})
     response.set_cookie(
-        "auth_token", "", httponly=True, secure=False, samesite="Strict", expires=0
+        "auth_token", "", httponly=True, secure=False, samesite="Strict"
     )  # secure=True in production
     return response, 200
 

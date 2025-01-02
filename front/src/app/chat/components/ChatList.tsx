@@ -26,8 +26,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newChatUsername, setNewChatUsername] = useState(""); // State để lưu giá trị tìm kiếm
   const { user } = useAuth();
-  
+
   useEffect(() => {
     if (!user?.id) return;
 
@@ -46,7 +47,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         const result = await response.json();
         if (result.status === "success" && result.data.chats) {
           setChats(result.data.chats);
-          console.log(result.data.chats);
         }
       } catch (error) {
         console.error("Error fetching chats:", error);
@@ -61,6 +61,31 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   const handleSelectChat = (chatId: string) => {
     onSelectChat(chatId);
+  };
+
+  const handleCreateChat = async () => {
+    if (!newChatUsername.trim()) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/chat/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiver: newChatUsername }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create chat");
+      }
+
+      const result = await response.json();
+      if (result.status === "success" && result.data.chat) {
+        setChats((prevChats) => [result.data.chat, ...prevChats]); // Cập nhật danh sách chat
+        setNewChatUsername(""); // Reset ô nhập
+      }
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
   };
 
   if (loading) {
@@ -92,11 +117,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   return (
     <div className="w-1/5 border-r border-gray-300">
-      <h2 className="text-xl font-bold p-4">Cuộc trò chuyện</h2>
       <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
         {chats.length === 0 ? (
           <div className="p-4 text-gray-500 text-center">
-            Không có cuộc trò chuyện nào
+            <p>Không có cuộc trò chuyện nào</p>
           </div>
         ) : (
           <ul className="divide-y divide-gray-200">
@@ -130,6 +154,23 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           </ul>
         )}
       </div>
+
+      {/* Ô tìm kiếm tạo chat mới */}
+      {/* <div className="p-4 border-t border-gray-300">
+        <input
+          type="text"
+          value={newChatUsername}
+          onChange={(e) => setNewChatUsername(e.target.value)}
+          placeholder="Nhập tên người dùng để bắt đầu trò chuyện mới"
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+        <button
+          onClick={handleCreateChat}
+          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full"
+        >
+          Tạo cuộc trò chuyện
+        </button>
+      </div> */}
     </div>
   );
 };

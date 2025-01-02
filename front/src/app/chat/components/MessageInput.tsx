@@ -20,16 +20,16 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, sender, reci
           method: "POST",
           credentials: "include",
           body: JSON.stringify({
-            _id: "6774f42da75f4f556a2d4344", // Thay thế bằng ObjectId nếu dùng server-side
+            _id: "6774f42da75f4f556a2d4344",
             content: message, 
-            sender, // Thay bằng ID của người gửi
-            recipient, // Thay bằng ID của người nhận
-            timestamp: new Date().toISOString(), // Tạo timestamp hiện tại
-            status: "sent", // Trạng thái tin nhắn
-            type: "text", // Loại tin nhắn
-            attachment_url: null, // URL đính kèm nếu có
-            chatId: "6772b302761a160e587cefcb", // ID của cuộc trò chuyện
-            isRead: false // Trạng thái đã đọc
+            sender, 
+            recipient, 
+            timestamp: new Date().toISOString(),
+            status: "sent", 
+            type: "text",
+            attachment_url: null, 
+            chatId: chatId, 
+            isRead: false 
           }),
         });
       } catch (error) {

@@ -1,20 +1,36 @@
 import { fetchAllTeacherRequest } from "@/app/api/admin";
-import { Paper } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useRouter } from "next/navigation";
+import axios from 'axios';
 import { useEffect, useState } from "react";
 
-const handleAccept = (id: string) => {
-    // Implement the logic to accept the teacher request
-    console.log("Accepted:", id);
-    // Add your acceptance logic here (e.g., API call)
-  };
+const handleAccept = async (id: string) => {
+  console.log("Test:", id);
+  try {
+    const response = await axios.post('http://localhost:5000/admin/accept_teacher', 
+            { _id: id },  // Pass the correct property named "_id"
+            { withCredentials: true }  // Move `withCredentials` here
+    );
+    console.log('Accepted:', response.data);
+  } catch (error) {
+    console.error('Error accepting request:', error);
+  }
+};
 
-const handleDecline = (id: string) => {
-    // Implement the logic to decline the teacher request
-    console.log("Declined:", id);
-    // Add your decline logic here (e.g., API call)
-  };
+
+const handleDecline = async (id: string) => {
+  console.log("Test:", id);
+  try {
+    const response = await axios.post('http://localhost:5000/admin/decline_teacher',
+      { _id: id },  // Pass the correct property named "_id"
+      { withCredentials: true }  // Move `withCredentials` here
+    );
+
+    console.log('Declined:', response.data);
+  } catch (error) {
+    console.error('Error accepting request:', error);
+  }
+};
 
 const columns: GridColDef[] = [
   { field: "index", headerName: "Index", width: 200 },
@@ -27,8 +43,8 @@ const columns: GridColDef[] = [
     width: 200,
     renderCell: (params) => (
       <div>
-        <button onClick={() => handleAccept(params.row._id)}>Accept</button>
-        <button onClick={() => handleDecline(params.row._id)}>Decline</button>
+        <Button onClick={() => handleAccept(params.row._id)}>Accept</Button>
+        <Button onClick={() => handleDecline(params.row._id)}>Decline</Button>
       </div>
     ),
   },
@@ -37,12 +53,6 @@ const columns: GridColDef[] = [
 export default function TeacherRequestTable() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  const onRowClickHandler = (params: any) => {
-    const id = params.row._id;
-    router.push(`/teacherRequest/${id}`);
-  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -72,7 +82,6 @@ export default function TeacherRequestTable() {
         columns={columns}
         loading={loading}
         pageSizeOptions={[5, 10]}
-        onRowClick={onRowClickHandler}
         sx={{ border: 0 }}
       />
     </Paper>

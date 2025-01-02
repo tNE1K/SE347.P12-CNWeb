@@ -5,6 +5,7 @@ import ChatWindow from "./components/ChatWindow";
 import MessageInput from "./components/MessageInput";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/component/authProvider";
+import Navbar from "./components/Navbar";
 
 interface Message {
   _id: string;
@@ -14,24 +15,56 @@ interface Message {
   timestamp: string;
 }
 
+interface UserDetail {
+  id: string;
+  name: string;
+  fullname: string;
+}
+
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [userDetail, setUserDetail] = useState<UserDetail | undefined>(undefined);
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user?.id) return;
 
+    const fetchUserDetail = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user details");
+        }
+
+        const result = await response.json();
+        setUserDetail(result.user);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    fetchUserDetail();
+  }, [user]);
+
+  useEffect(() => {
+    if (!selectedChat || !user?.id) return;
+
+    // Connect to socket server when a chat is selected
     const socketConnection = io("http://127.0.0.1:5000", {
-      query: { user_id: user.id },
+      query: { user_id: user.id, chat_id: selectedChat },
       withCredentials: true,
     });
 
     setSocket(socketConnection);
 
     socketConnection.on("connect", () => {
-      console.log("Connected to socket server");
+      console.log(`Connected to chat ${selectedChat}`);
     });
 
     socketConnection.on("receive_message", (message: Message) => {
@@ -40,11 +73,12 @@ export default function ChatPage() {
 
     return () => {
       socketConnection.disconnect();
+      setSocket(null);
     };
-  }, [user]);
+  }, [selectedChat, user]);
 
   const sendMessage = async (message: string) => {
-    if (!user || !selectedChat) return;
+    if (!user || !selectedChat || !socket) return;
 
     const newMessage = {
       sender: user.id,
@@ -53,37 +87,32 @@ export default function ChatPage() {
       timestamp: new Date().toISOString(),
     };
 
-    socket?.emit("send_message", newMessage, (response: { status: string }) => {
+    socket.emit("send_message", newMessage, (response: { status: string }) => {
       if (response.status === "success") {
-      console.log("Message sent successfully");
+        console.log("Message sent successfully");
       } else {
-      console.error("Failed to send message");
+        console.error("Failed to send message");
       }
     });
 
     setMessages((prev) => [...prev, { ...newMessage, _id: Date.now().toString() }]);
   };
 
-
   const fetchMessages = async (chat_id: string) => {
     if (!user) return;
     try {
       const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
-          method: "GET",
-          credentials: "include",
+        method: "GET",
+        credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch messages");
       }
 
       const result = await response.json();
       if (result.status === "success" && result.data.messages) {
-        const messages = result.data.messages;
-        messages.forEach((message: { content: string; timestamp: string; sender: string; recipient: string }) => {
-          // console.log(`Message from ${message.sender} to ${message.recipient} at ${message.timestamp}: ${message.content}`);
-        });
-        setMessages(messages);
+        setMessages(result.data.messages);
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -93,27 +122,33 @@ export default function ChatPage() {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat);
-      setMessages(messages);
     }
   }, [selectedChat]);
 
   return (
-      // console.log("messager forward: ", messages),
-      <div className="flex h-screen">
-      <ChatList onSelectChat={setSelectedChat} />
-      <div className="flex-1 flex flex-col">
-        {selectedChat ? (
+    <div className="flex flex-col h-screen">
+      <Navbar userDetail={userDetail} />
+      <div className="flex flex-1">
+        <ChatList onSelectChat={setSelectedChat} />
+        <div className="flex-1 flex flex-col">
+          {selectedChat ? (
             <>
               <ChatWindow messages={messages} />
-              {user?.id && selectedChat && (
-                <MessageInput onSendMessage={sendMessage} sender={user.id} recipient={selectedChat} chatId={selectedChat} />
+              {user?.id && (
+                <MessageInput
+                  onSendMessage={sendMessage}
+                  sender={user.id}
+                  recipient={selectedChat}
+                  chatId={selectedChat}
+                />
               )}
             </>
-        ) : (
-          <div className="flex h-full justify-center items-center">
-            Select a chat to start messaging
-          </div>
-        )}
+          ) : (
+            <div className="flex h-full justify-center items-center">
+              Select a chat to start messaging
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

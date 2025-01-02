@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from flask import send_from_directory
+from bson import ObjectId
 import os
 
 client = MongoClient(os.getenv("MONGO_URI"))
@@ -29,8 +29,11 @@ class Teacher:
 
     @staticmethod
     def verify_teacher(id):
-        result = user_collection.update_one({"_id": id}, {"isVerify": True})
-        print(result.matched_count + " successfully updated")
+        return user_collection.update_one({"_id": ObjectId(id)}, {"$set" : {"role": "teacher"}})
+    
+    @staticmethod
+    def decline_teacher(id):
+        return user_collection.update_one({"_id": ObjectId(id)}, {"$set" : {"teacherVerifyRequest": False}})
 
     @staticmethod
     def delete_teacher(id):

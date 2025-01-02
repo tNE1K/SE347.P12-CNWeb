@@ -1,5 +1,5 @@
 import { ILesson } from "./lesson";
-
+import { IUser } from "./user";
 export interface ICourse {
   _id: string;
   comments: string[];
@@ -13,7 +13,10 @@ export interface ICourse {
   title: string;
   createdAt: string;
   rating: number;
+  price: number;
   numberRatings: number;
+  teacher_id: string;
+  teacher: IUser;
 }
 export interface UpdateCoursePayload {
   courseId: string;
@@ -24,5 +27,42 @@ export interface UpdateCoursePayload {
     label?: string[];
     cover?: string;
     lessonIds?: string[];
+    price?: number;
   };
+}
+export interface SearchCourseParams {
+  page: number;
+  limit: number;
+  order: string;
+  keyword: string;
+  rating: number;
+  label: string;
+  priceFrom: number;
+  priceTo: number;
+}
+export interface UserEnrollCourseCount {
+  data: {
+    name: string;
+    numberEnroll: number;
+  }[];
+  message: string;
+  status: string;
+  totalUniqueUsersEnroll: number;
+}
+export interface CourseCount {
+  data: {
+    label: string;
+    numberCourse: number;
+  }[];
+  message: string;
+  status: string;
+  totalCourses: number;
+}
+export interface IUserLesson {
+  _id: string;
+  course_id: string;
+  createdAt: string;
+  isCompleted: boolean;
+  lesson_id: string;
+  user_id: string;
 }

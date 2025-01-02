@@ -143,7 +143,6 @@ export default function LessonDetail({
           >
             <MenuItem value={ELessonType.Video}>Video</MenuItem>
             <MenuItem value={ELessonType.Selection}>Selection</MenuItem>
-            <MenuItem value={ELessonType.CodeScript}>Code script</MenuItem>
           </Select>
         </FormControl>
       </div>

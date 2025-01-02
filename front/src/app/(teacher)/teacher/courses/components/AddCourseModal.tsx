@@ -2,6 +2,7 @@
 "use client";
 
 import { createCourse, uploadImage } from "@/app/api/course";
+import { useAuth } from "@/app/component/authProvider";
 import { UpdateCoursePayload } from "@/app/types/course";
 import AddIcon from "@mui/icons-material/Add";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
@@ -77,8 +78,8 @@ export default AddCourseButton;
 
 function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
   const theme = useTheme();
-  const queryClient = useQueryClient();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate } = useMutation({
     mutationFn: (newCourseData: FormData) => {
       return createCourse(newCourseData);
@@ -94,10 +95,11 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
     },
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
+  const { user } = useAuth();
   const imgUrl = useRef<string>();
   const [error, setError] = useState("");
   const [nameCourse, setNameCourse] = useState("");
+  const [price, setPrice] = useState(0);
   const [label, setLabel] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
@@ -118,6 +120,7 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
       setError("Please enter name course");
       return;
     }
+    if (!user?.id) return;
     let imgSrc = "";
     if (selectedImage) {
       const res = await uploadImage(selectedImage);
@@ -129,8 +132,10 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
     formData.append("title", nameCourse);
     formData.append("description", description);
     formData.append("cover", imgSrc);
+    formData.append("price", price.toString());
     formData.append("label", JSON.stringify(label));
     formData.append("status", "publish");
+    formData.append("teacher_id", user.id);
     mutate(formData);
     toggle();
   };
@@ -187,7 +192,13 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
           onChange={(e) => setDescription(e.target.value)}
           multiline
         />
-
+        <TextField
+          label="Price"
+          name="price"
+          value={price}
+          type="number"
+          onChange={(e) => setPrice(Number(e.target.value))}
+        />
         <FormControl sx={{ width: 300 }}>
           <InputLabel id="demo-multiple-name-label">
             Add labels Course
