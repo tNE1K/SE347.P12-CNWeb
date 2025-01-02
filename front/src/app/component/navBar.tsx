@@ -110,6 +110,15 @@ export default function NavBar() {
           </Button>
         </div>
 
+        <Button
+            variant="outlined"
+            onClick={() => {
+              router.push("/chat");
+            }}
+          >
+            Chat
+          </Button>
+
         <div>
           {!isAuthenticated ? (
             <div className={"mx-4 space-x-8"}>
