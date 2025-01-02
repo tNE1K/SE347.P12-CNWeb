@@ -95,6 +95,7 @@ def signup():
         "role": "user",
         "participatedCourses": [],
         "isVerify": False,
+        "birthday": "",
         "firstName": "",
         "lastName": "",
         "teacherVerifyRequest": False,
