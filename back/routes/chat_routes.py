@@ -5,64 +5,94 @@ from utils.token_utils import token_required
 from models.chat_model import Chat
 from flask_cors import cross_origin
 from bson import ObjectId
+from datetime import datetime
 
 chat_blueprint = Blueprint('chat', __name__)
 
 connected_users = {}
+chat_rooms = {}       # {chat_id: [user_id1, user_id2]}
 
 def setup_socketio(socketio):
     @socketio.on('connect')
     def handle_connect():
         user_id = request.args.get('user_id')
+        chat_id = request.args.get('chat_id')
+
         if not user_id:
             print("User ID not provided")
             return False
-        print("User ID provided: " + user_id)
-        connected_users[user_id] = request.sid
-        print(f"User {user_id} connected with session ID {request.sid}")
-        emit("connection_success", {"message": "Connected successfully!"})
+        print(f"User {user_id} attempting to connect to chat {chat_id}")
 
-    @socketio.on('join_room')
-    def handle_join_room(data):
-        print("in here")
-        print("this is  data" + data)
-        room = data.get('room')
-        user_id = request.args.get('user_id')  
+        if chat_id not in chat_rooms:
+            chat_rooms[chat_id] = [] 
 
-        if room:
-            join_room(room)
-            print(f"User {user_id} joined room {room}")
-            emit("room_joined", {"message": f"{user_id} joined room {room}"}, room=room)
+        if user_id not in chat_rooms[chat_id]:
+            chat_rooms[chat_id].append(user_id) 
+
+        join_room(chat_id)
+        print(f"User {user_id} connected and joined room {chat_id}")
+        emit("connection_success", {"message": f"User {user_id} successfully joined room {chat_id}"})
 
     @socketio.on('send_message')
     def handle_send_message(data):
         room = data.get('room')
-        message = data.get('message')
+        content = data.get('content')
         sender_id = request.args.get('user_id')
+        recipient_id = data.get('recipient_id')
+        message_type = data.get('type', 'text')
+        attachment_url = data.get('attachment_url', None)
+        sender_sid = request.sid
 
-        if room and message:
-            print(f"Message from {sender_id} to room {room}: {message}")
-            emit("receive_message", {"sender": sender_id, "message": message}, room=room)
-            msg = Message(sender_id, room, message)
-            msg.save()
+        if room and content and sender_id and recipient_id:
+            print(f"Message from {sender_id} to room {room}: {content}")
+            emit("receive_message", {"sender": sender_id, "content": content}, room=room, skip_sid=sender_sid)
+
+            # Save the message to MongoDB
+            message = Message(
+                content=content,
+                sender=sender_id,
+                recipient=recipient_id,
+                chat_id=room,
+                type=message_type,
+                attachment_url=attachment_url
+            )
+            message_id = message.save()
+            print(f"Message saved to MongoDB with ID: {message_id}")
+
+            return {"status": "success", "content": "Message sent successfully!"}
+        else:
+            return {"status": "error", "content": "Invalid message data!"}
 
     @socketio.on('leave_room')
     def handle_leave_room(data):
         room = data.get('room')
         user_id = request.args.get('user_id')
 
-        if room:
-            leave_room(room)
+        if room and user_id and room in chat_rooms and user_id in chat_rooms[room]:
+            chat_rooms[room].remove(user_id)  # Xóa user khỏi phòng chat
+            leave_room(room)  # Rời khỏi phòng chat
             print(f"User {user_id} left room {room}")
-            emit("room_left", {"message": f"{user_id} left room {room}"}, room=room)
+            emit("room_left", {"message": f"User {user_id} left room {room}"}, room=room)
+        else:
+            emit("error", {"message": "Invalid room or user not in room."})
+
 
     @socketio.on('disconnect')
     def handle_disconnect():
         user_id = next((k for k, v in connected_users.items() if v == request.sid), None)
         if user_id:
             del connected_users[user_id]
-            print(f"User {user_id} disconnected")
+            # Xoá user khỏi các phòng chat liên quan
+            for chat_id, users in list(chat_rooms.items()):
+                if user_id in users:
+                    users.remove(user_id)
+                    if not users:  # Xoá phòng nếu rỗng
+                        del chat_rooms[chat_id]
+            print(f"User {user_id} disconnected")    
+    
 
+
+# Lấy danh sách chat của user api    
 @chat_blueprint.route('/list', methods=['GET'])
 @token_required
 def get_chat_list(payload):
@@ -90,7 +120,7 @@ def get_chat_list(payload):
                 "participants": {
                     "sender": sender,  # người tạo chat
                     "receiver": receiver  # người nhận
-                },
+                }, 
                 "isGroupChat": chat.get('isGroupChat', False),
                 "lastMessage": {
                     "senderId": last_message.get('senderId'),
@@ -149,17 +179,17 @@ def get_chat_messages(payload):
             "message": str(e)
         }), 500
 
-@chat_blueprint.route('/send', methods=['POST'])
-@token_required
-def send_chat_message():
-    data = request.json
-    sender = data.get('sender')
-    recipient = data.get('recipient')
-    message = data.get('message')
+# @chat_blueprint.route('/send', methods=['POST'])
+# @token_required
+# def send_chat_message():
+#     data = request.json
+#     sender = data.get('sender')
+#     recipient = data.get('recipient')
+#     message = data.get('message')
 
-    if not sender or not recipient or not message:
-        return jsonify({"error": "Sender, recipient, and message are required"}), 400
+#     if not sender or not recipient or not message:
+#         return jsonify({"error": "Sender, recipient, and message are required"}), 400
 
-    msg = Message(sender, recipient, message)
-    msg.save() 
-    return jsonify({"success": True}), 200
+#     msg = Message(sender, recipient, message)
+#     msg.save() 
+#     return jsonify({"success": True}), 200

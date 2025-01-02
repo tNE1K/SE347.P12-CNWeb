@@ -19,26 +19,36 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
   useEffect(() => {
     if (!user?.id) return; 
   }, [messages, user]);
-  // console.log("Chat messages chat windows:", messages);
+
+  console.log("Chat messages chat windows:", messages);
   return (
     <div className="flex-1 p-4 overflow-auto flex flex-col">
       {messages.map((msg, index) => (
         <div
-          key={msg._id || `message-${index}`}
-          className={`p-2 mb-2 rounded max-w-xs ${
-            msg.sender === user?.id
-              ? "bg-blue-100 self-end"
-              : "bg-gray-200 self-start"
+        key={msg._id || `message-${index}`}
+        className={`p-2 mb-2 rounded max-w-xs break-words ${
+          msg.sender === user?.id
+            ? "bg-blue-100 self-end"
+            : "bg-gray-200 self-start"
+        }`}
+        style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+      >
+        <div>{msg.content}</div>
+        <p
+          className={`text-xs ${
+            msg.sender === user?.id ? "text-right" : "text-left"
           }`}
         >
-          <div>{msg.content}</div>
-            <p className="text-xs text-right">
-            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-        </div>
+          {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
       ))}
     </div>
   );
 };
 
 export default ChatWindow;
+

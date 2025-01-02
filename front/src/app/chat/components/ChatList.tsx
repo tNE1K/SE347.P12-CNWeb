@@ -3,7 +3,7 @@ import { formatDistanceToNow as formatDistanceToNowFn } from "date-fns";
 import { useAuth } from "@/app/component/authProvider";
 
 interface ChatListProps {
-  onSelectChat: (chatId: string) => void;
+  onSelectChat: (chatId: string, receiver: string) => void;
 }
 
 interface LastMessage {
@@ -59,8 +59,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     fetchChats();
   }, []);
 
-  const handleSelectChat = (chatId: string) => {
-    onSelectChat(chatId);
+  const handleSelectChat = (chatId: string, receiver: string) => {
+    onSelectChat(chatId,receiver);
   };
 
   const handleCreateChat = async () => {
@@ -127,7 +127,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
             {chats.map((chat) => (
               <li
                 key={chat.id}
-                onClick={() => handleSelectChat(chat.id)}
+                onClick={() => handleSelectChat(chat.id, chat.participants.receiver)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="p-4 space-y-2">

@@ -1,39 +1,49 @@
 import React, { useState } from "react";
+import { Socket } from "socket.io-client";
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (content: string, recipient: string) => void;
   sender: string;
   recipient: string;
   chatId: string;
+  socket: Socket | null;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, sender, recipient, chatId }) => {
-  const [message, setInput] = useState("");
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage ,sender, recipient, chatId, socket }) => {
+  const [content, setInput] = useState("");
+  const [status, setStatus] = useState<string | null>(null); // Trạng thái gửi tin nhắn
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
+    if (content.trim()) {
+      const payload = {
+        room: chatId,
+        sender_id: sender,
+        recipient_id: recipient,
+        content: content,
+        timestamp: new Date().toISOString(),
+      };
 
-      try {
-        await fetch("http://127.0.0.1:5000/chat/messages", {
-          method: "POST",
-          credentials: "include",
-          body: JSON.stringify({
-            _id: "6774f42da75f4f556a2d4344",
-            content: message, 
-            sender, 
-            recipient, 
-            timestamp: new Date().toISOString(),
-            status: "sent", 
-            type: "text",
-            attachment_url: null, 
-            chatId: chatId, 
-            isRead: false 
-          }),
-        });
-      } catch (error) {
-        console.error("Error posting message to MongoDB:", error);
+      console.log("Payload to be sent:", payload);
+
+      socket?.emit("send_message", payload, (response: { status: string; content: string }) => {
+        if (response?.status === "success") {
+          console.log("Message sent successfully via socket!");
+        } else {
+          console.error("Failed to send message via socket:", response?.content);
+          setStatus("Failed to send message.");
+        }
+      });
+
+      if (socket?.connected) {
+        console.log("Socket is connected");
+      } else {
+        console.log("Socket is not connected");
+        setStatus("Socket connection lost.");
+      }
+
+      if (onSendMessage) {
+        onSendMessage(content, recipient);
       }
 
       setInput("");
@@ -42,17 +52,37 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, sender, reci
 
   return (
     <form className="p-4 border-t flex items-center" onSubmit={handleSend}>
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setInput(e.target.value)}
+      <textarea
+        value={content}
+        onChange={(e) => {
+          setInput(e.target.value);
+          e.target.style.height = "auto"; // Reset chiều cao trước
+          e.target.style.height = `${e.target.scrollHeight}px`; // Đặt chiều cao theo nội dung
+        }}
         placeholder="Type a message"
-        className="flex-grow border rounded px-2 py-1"
+        className="flex-grow border rounded px-2 py-1 resize-none"
+        rows={1} // Chiều cao mặc định
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault(); // Ngăn hành động xuống dòng với Enter (không nhấn Shift)
+            handleSend(e);
+          }
+        }}
+        ref={(ref) => {
+          if (ref && content === "") {
+            ref.style.height = "auto"; // Reset chiều cao nếu content trống
+          }
+        }}
       />
-      <button type="submit" className="ml-2 px-4 py-1 border rounded bg-blue-500 text-white">
+      <button
+        type="submit"
+        className="ml-2 px-4 py-1 border rounded bg-blue-500 text-white"
+      >
         Send
       </button>
+      {status && <p className="text-sm text-gray-500 ml-2">{status}</p>}
     </form>
+
   );
 };
 

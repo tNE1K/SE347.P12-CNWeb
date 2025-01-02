@@ -69,7 +69,7 @@ export default function NavBar() {
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
         <div
           onClick={() => {
-            router.push("http://localhost:3000");
+            router.push("http://127.0.0.1:3000");
           }}
           className="h-full select-none place-content-center pl-8 font-sans text-3xl font-bold text-black hover:cursor-pointer"
         >
@@ -125,14 +125,19 @@ export default function NavBar() {
           </Button>
         </div>
 
-        <Button
-            variant="outlined"
-            onClick={() => {
+        
+            {isAuthenticated && (
+            <Button
+              variant="contained"
+              sx={{ textTransform: "none" }}
+              onClick={() => {
               router.push("/chat");
-            }}
-          >
-            Chat
-          </Button>
+              }}
+              className=""
+            >
+              Chat
+            </Button>
+            )}
 
         <div>
           {!isAuthenticated ? (
