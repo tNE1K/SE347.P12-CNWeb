@@ -1,4 +1,5 @@
 import { ILesson } from "./lesson";
+import { IUser } from "./user";
 export interface ICourse {
   _id: string;
   comments: string[];
@@ -14,6 +15,8 @@ export interface ICourse {
   rating: number;
   price: number;
   numberRatings: number;
+  teacher_id: string;
+  teacher: IUser;
 }
 export interface UpdateCoursePayload {
   courseId: string;
@@ -54,4 +57,12 @@ export interface CourseCount {
   message: string;
   status: string;
   totalCourses: number;
+}
+export interface IUserLesson {
+  _id: string;
+  course_id: string;
+  createdAt: string;
+  isCompleted: boolean;
+  lesson_id: string;
+  user_id: string;
 }

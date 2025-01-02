@@ -1,0 +1,165 @@
+from flask import Blueprint, request, jsonify
+from flask_socketio import join_room, leave_room, emit
+from models.message_model import Message
+from utils.token_utils import token_required
+from models.chat_model import Chat
+from flask_cors import cross_origin
+from bson import ObjectId
+
+chat_blueprint = Blueprint('chat', __name__)
+
+connected_users = {}
+
+def setup_socketio(socketio):
+    @socketio.on('connect')
+    def handle_connect():
+        user_id = request.args.get('user_id')
+        if not user_id:
+            print("User ID not provided")
+            return False
+        print("User ID provided: " + user_id)
+        connected_users[user_id] = request.sid
+        print(f"User {user_id} connected with session ID {request.sid}")
+        emit("connection_success", {"message": "Connected successfully!"})
+
+    @socketio.on('join_room')
+    def handle_join_room(data):
+        print("in here")
+        print("this is  data" + data)
+        room = data.get('room')
+        user_id = request.args.get('user_id')  
+
+        if room:
+            join_room(room)
+            print(f"User {user_id} joined room {room}")
+            emit("room_joined", {"message": f"{user_id} joined room {room}"}, room=room)
+
+    @socketio.on('send_message')
+    def handle_send_message(data):
+        room = data.get('room')
+        message = data.get('message')
+        sender_id = request.args.get('user_id')
+
+        if room and message:
+            print(f"Message from {sender_id} to room {room}: {message}")
+            emit("receive_message", {"sender": sender_id, "message": message}, room=room)
+            msg = Message(sender_id, room, message)
+            msg.save()
+
+    @socketio.on('leave_room')
+    def handle_leave_room(data):
+        room = data.get('room')
+        user_id = request.args.get('user_id')
+
+        if room:
+            leave_room(room)
+            print(f"User {user_id} left room {room}")
+            emit("room_left", {"message": f"{user_id} left room {room}"}, room=room)
+
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        user_id = next((k for k, v in connected_users.items() if v == request.sid), None)
+        if user_id:
+            del connected_users[user_id]
+            print(f"User {user_id} disconnected")
+
+@chat_blueprint.route('/list', methods=['GET'])
+@token_required
+def get_chat_list(payload):
+    user_id = payload.get('user_id')
+    if not user_id:
+        return jsonify({"error": "User ID is required"}), 400
+    try:
+        user_chats = Chat.find({
+            "participants": user_id
+        })
+        print("user_chats: ", user_chats)
+        chat_list = []
+        for chat in user_chats:
+            last_message = chat.get('lastMessage', {})
+            if last_message:
+                timestamp = last_message.get('timestamp')
+                if timestamp:
+                    last_message['timestamp'] = timestamp.isoformat() if hasattr(timestamp, 'isoformat') else timestamp
+
+            sender = chat['participants'][0] if chat['participants'][0] == user_id else chat['participants'][1]
+            receiver = chat['participants'][1] if chat['participants'][0] == user_id else chat['participants'][0]
+
+            chat_data = {
+                "id": str(chat['_id']),
+                "participants": {
+                    "sender": sender,  # người tạo chat
+                    "receiver": receiver  # người nhận
+                },
+                "isGroupChat": chat.get('isGroupChat', False),
+                "lastMessage": {
+                    "senderId": last_message.get('senderId'),
+                    "content": last_message.get('content'),
+                    "timestamp": last_message.get('timestamp')
+                }
+            }
+            chat_list.append(chat_data)
+            print("chat data: ", chat_data)
+        
+        return jsonify({
+            "status": "success",
+            "data": {
+                "chats": chat_list
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@chat_blueprint.route('/messages', methods=['GET'])
+@token_required
+def get_chat_messages(payload):
+    chat_id = request.args.get('chat_id')
+    print("payload", payload)
+    if not chat_id:
+        return jsonify({"error": "Chat ID is required"}), 400
+    try:
+        messages = Message.find({"chatId": chat_id})
+        print("messages:", messages)
+
+        formatted_messages = []
+        for message in messages:
+            formatted_message = {
+                "id": str(message['_id']),
+                "sender": message['sender'],    
+                "recipient": message['recipient'],
+                "content": message['content'],
+                "timestamp": message['timestamp'].isoformat() if hasattr(message['timestamp'], 'isoformat') else message['timestamp']
+            }
+            formatted_messages.append(formatted_message)
+        print("formatted_messages: ", formatted_messages)
+        return jsonify({
+            "status": "success",
+            "data": {
+                "messages": formatted_messages
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@chat_blueprint.route('/send', methods=['POST'])
+@token_required
+def send_chat_message():
+    data = request.json
+    sender = data.get('sender')
+    recipient = data.get('recipient')
+    message = data.get('message')
+
+    if not sender or not recipient or not message:
+        return jsonify({"error": "Sender, recipient, and message are required"}), 400
+
+    msg = Message(sender, recipient, message)
+    msg.save() 
+    return jsonify({"success": True}), 200

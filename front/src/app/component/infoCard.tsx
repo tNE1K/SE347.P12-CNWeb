@@ -1,6 +1,5 @@
 "use client";
 import {
-  Box,
   Button,
   Card,
   CardActions,
@@ -10,32 +9,24 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { sendVerifyDocument } from "../api/teacher";
-import { fetchInfo } from "../api/user";
-import { updateInfo } from "../api/user";
+import { fetchUserInfo, updateInfo } from "../api/user";
 
 interface BirthdatePickProps {
   disabled: boolean;
 }
 
-const bull = (
-  <Box
-    component="span"
-    sx={{ display: "inline-block", mx: "2px", transform: "scale(0.8)" }}
-  ></Box>
-);
-
-export default function InfoCard() {
-  const [isEditing, setIsEditing] = useState(false); // Track edit mode
+const InfoCard: React.FC = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isVerifySent, setIsVerifySent] = useState(false);
   const [open, setOpen] = useState(false);
   const [certificateFiles, setCertificateFiles] = useState<File[]>([]);
   const [idFile, setIdFile] = useState<File | null>(null);
@@ -44,6 +35,7 @@ export default function InfoCard() {
     lastName: "",
     email: "",
     birthday: "",
+    teacherVerifyRequest: false,
   });
 
   const BirthdatePick: React.FC<BirthdatePickProps> = ({ disabled }) => {
@@ -55,7 +47,7 @@ export default function InfoCard() {
           onChange={(newValue) =>
             setUserInfo((prevState) => ({
               ...prevState,
-              birthday: newValue ? newValue.format("YYYY-MM-DD") : "",
+              birthday: newValue ? newValue.format("YYYY-MM-DD") : "", // Ensure it stays a string
             }))
           }
         />
@@ -63,31 +55,26 @@ export default function InfoCard() {
     );
   };
 
-  // Open/close dialog handlers
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // Handle certificate files
   const handleCertificateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setCertificateFiles(Array.from(e.target.files));
     }
   };
 
-  // Handle ID file
   const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setIdFile(e.target.files[0]); // Only one file allowed
     }
   };
 
-  // Submit files to API
   const handleSubmit = async () => {
     if (!certificateFiles.length || !idFile) {
       alert("Please upload all required files.");
       return;
     }
-
     const formData = new FormData();
     certificateFiles.forEach((file, index) => {
       formData.append(`certificate_${index}`, file);
@@ -102,7 +89,7 @@ export default function InfoCard() {
 
   const handleSaveClick = async () => {
     try {
-      await updateInfo(userInfo, userInfo.email)
+      await updateInfo(userInfo, userInfo.email);
       alert("User information updated successfully!");
       setIsEditing(false);
     } catch (error) {
@@ -114,24 +101,26 @@ export default function InfoCard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetchInfo();
+        const response = await fetchUserInfo();
         setUserInfo(response);
+        setIsVerifySent(response.teacherVerifyRequest);
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
     };
-
     fetchUser();
   }, []);
 
   return (
-    <Card sx={{ width: "100%" }}>
+    <Card className="w-full shadow-lg rounded-lg overflow-hidden">
       <CardContent className="flex flex-col gap-4">
-        <Typography variant="h3">Your information</Typography>
-        <div className={"flex flex-row gap-8 w-full"}>
-          <div className={"flex flex-col gap-2 w-1/2"}>
-            <Typography variant="h5" component="div">
-              First name
+        <Typography variant="h3" className="font-bold text-center">
+          Your Information
+        </Typography>
+        <div className="flex flex-row gap-8 w-full">
+          <div className="flex flex-col gap-2 w-1/2">
+            <Typography variant="h5" component="div" className="font-semibold">
+              First Name
             </Typography>
             <TextField
               disabled={!isEditing}
@@ -140,11 +129,14 @@ export default function InfoCard() {
               onChange={(e) =>
                 setUserInfo({ ...userInfo, firstName: e.target.value })
               }
+              variant="outlined"
+              fullWidth
+              className="bg-white"
             />
           </div>
-          <div className={"flex flex-col gap-2 w-1/2"}>
-            <Typography variant="h5" component="div">
-              Last name
+          <div className="flex flex-col gap-2 w-1/2">
+            <Typography variant="h5" component="div" className="font-semibold">
+              Last Name
             </Typography>
             <TextField
               disabled={!isEditing}
@@ -153,33 +145,44 @@ export default function InfoCard() {
               onChange={(e) =>
                 setUserInfo({ ...userInfo, lastName: e.target.value })
               }
+              variant="outlined"
+              fullWidth
+              className="bg-white"
             />
           </div>
         </div>
-        <div className={"flex flex-col gap-2"}>
-          <Typography variant="h5" component="div">
+        <div className="flex flex-col gap-2">
+          <Typography variant="h5" component="div" className="font-semibold">
             Email
           </Typography>
           <TextField
             disabled
             id="email-textfield"
             value={userInfo.email}
+            variant="outlined"
+            fullWidth
+            className="bg-gray-100"
           />
         </div>
-        <div className={"flex flex-col gap-2"}>
-          <Typography variant="h5" component="div">
+        <div className="flex flex-col gap-2">
+          <Typography variant="h5" component="div" className="font-semibold">
             Birthday
           </Typography>
           <BirthdatePick disabled={!isEditing} />
         </div>
       </CardContent>
-      <CardActions>
-        <Button variant="contained" color="primary" onClick={handleOpen}>
-          Verify to be a teacher
+      <CardActions className="justify-between">
+        <Button variant="contained" color="primary" onClick={handleOpen} disabled={isVerifySent}>
+          Verify to be a Teacher
         </Button>
         {InputDialog()}
         {isEditing ? (
-          <Button variant="contained" color="primary" onClick={handleSaveClick}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveClick}
+            className="ml-auto"
+          >
             Save
           </Button>
         ) : (
@@ -198,25 +201,26 @@ export default function InfoCard() {
         <DialogContent>
           <TextField
             type="file"
-            slotProps={{
-              inputLabel: { shrink: true },
-              htmlInput: { accept: "image", multiple: true },
+            inputProps={{
+              accept: "image/*",
+              multiple: true,
             }}
             onChange={handleCertificateChange}
             fullWidth
             margin="dense"
             label="Certificates (Upload multiple images)"
+            className="border border-gray-300"
           />
           <TextField
             type="file"
-            slotProps={{
-              inputLabel: { shrink: true },
-              htmlInput: { accept: "image" },
+            inputProps={{
+              accept: "image/*",
             }}
             onChange={handleIdChange}
             fullWidth
             margin="dense"
             label="ID Image (Upload only one)"
+            className="border border-gray-300"
           />
         </DialogContent>
         <DialogActions>
@@ -230,4 +234,6 @@ export default function InfoCard() {
       </Dialog>
     );
   }
-}
+};
+
+export default InfoCard;

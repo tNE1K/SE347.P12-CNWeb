@@ -17,10 +17,11 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Box from "@mui/material/Box";
 import { useAuth } from "@/app/component/authProvider";
-import { Logout, Settings } from "@mui/icons-material";
+import { Logout, ManageSearch, Settings } from "@mui/icons-material";
 import SearchBox from "./searchBox";
 import { labels } from "../utils/labels";
 import SearchIcon from "@mui/icons-material/Search";
+import { getCourseByLabel } from "../api/course";
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -29,6 +30,7 @@ export default function NavBar() {
   };
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("");
+  const [courses, setCourses] = useState<any[]>([]);
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -36,11 +38,30 @@ export default function NavBar() {
   const router = useRouter();
   const [courseType, setCourseType] = React.useState("");
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setCourseType(event.target.value as string);
+  const handleChange = async (event: SelectChangeEvent) => {
+    const selectedLabel = event.target.value;
+    setCourseType(selectedLabel); // Store the selected label in state
+    setCategory(selectedLabel); // Update the category state
+  
+    console.log(selectedLabel);
+  
+    // Call the API to fetch courses with the selected label
+    try {
+      const response = await getCourseByLabel(selectedLabel);
+      setCourses(response.data); // Assuming the API returns the list of courses
+      console.log(response.data);
+      router.push(`/search?kw=&label=${selectedLabel}`);
+      
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
   };
+  
   const handleNavigateSearchPage = () => {
     router.push(`/search?kw=${keyword}&label=${category}`);
+  };
+  const handleNavigateManagePage = () => {
+    
   };
 
   return (
@@ -65,25 +86,18 @@ export default function NavBar() {
               label="Course"
               onChange={handleChange}
             >
-              <MenuItem
-                onClick={() => setCategory("")}
-                value={""}
-                key={"daskmdsakmd"}
-              >
+              <MenuItem onClick={() => setCategory("")} value={""}>
                 Chọn tất cả
               </MenuItem>
               {labels.map((label, idx) => (
-                <MenuItem
-                  onClick={() => setCategory(label)}
-                  value={label}
-                  key={idx}
-                >
+                <MenuItem value={label} key={idx}>
                   {label}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Box>
+
         <div className="flex w-1/3 gap-4">
           <SearchBox setKeyword={setKeyword} />
           <Button
@@ -97,7 +111,28 @@ export default function NavBar() {
           >
             Search
           </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<ManageSearch />}
+            sx={{ textTransform: "none" }}
+            onClick={() => {
+              handleNavigateManagePage();
+            }}
+            className=""
+          >
+            Manage Course
+          </Button>
         </div>
+
+        <Button
+            variant="outlined"
+            onClick={() => {
+              router.push("/chat");
+            }}
+          >
+            Chat
+          </Button>
 
         <div>
           {!isAuthenticated ? (
