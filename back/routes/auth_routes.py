@@ -91,11 +91,14 @@ def signup():
     new_user = {
         "email": email,
         "password": hashed_password,
-        "fullName": "",
         "avatar": "",
         "role": "user",
         "participatedCourses": [],
         "isVerify": False,
+        "firstName": "",
+        "lastName": "",
+        "teacherVerifyRequest": False,
+        "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png",
     }
     User.insert_user(new_user)
 
