@@ -24,9 +24,10 @@ def profile(current_user):
         # Update user profile logic
         return jsonify({"message": "Profile updated"}), 200
 
-@user_blueprint.route('/upload-verify-documents/<user_id>', methods=['POST'])
+@user_blueprint.route('/upload-verify-documents/', methods=['POST'])
 @token_required
-def upload_documents(user_id):
+def upload_documents(payload):
+    user_id = payload.get("user_id")
     try:
         # Accessing files from the request
         id_img = request.files.get('id_img')
@@ -57,24 +58,26 @@ def upload_documents(user_id):
             id_img_blob_client.upload_blob(id_img.stream, overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))  # Assuming JPEG for ID images
         else:
             return jsonify({'message': 'Invalid ID image type.'}), 400
-
+        certificate_urls = []
         # Handle certificate uploads
         for cert in certificates:
             if allowed_file(cert.filename):
                 cert_blob_path = generate_blob_path(cert)
                 cert_blob_client = container_client.get_blob_client(cert_blob_path)
                 cert_blob_client.upload_blob(cert.stream, overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))  # Assuming JPEG for certificates
-                certificate_filenames.append(cert_blob_path)
+                cert_url = cert_blob_client.url  # Get the URL of the uploaded certificate
+                certificate_urls.append(cert_url)
             else:
                 return jsonify({'message': 'Invalid certificate image type.'}), 400
 
         # Update verification request for the user in the database
         User.set_verify_request(user_id)
 
-        # Generate URLs for uploaded files
-        id_img_url = f"https://<your-account-name>.blob.core.windows.net/{container_name}/{id_img_blob_path}"
-        certificate_urls = [f"https://<your-account-name>.blob.core.windows.net/{container_name}/{filename}" for filename in certificate_filenames]
-
+        id_img_url = id_img_blob_client.url
+        
+        
+        img_array = [id_img_url] + certificate_urls
+        User.update_verify_images(user_id, img_array)
         return jsonify({
             'message': 'Files uploaded successfully.',
         }), 200
@@ -199,4 +202,3 @@ def get_video(user_id, video_name):
     except Exception as e:
         print(e)
         return jsonify({'message': f'Failed to retrieve video: {str(e)}'}), 500
-
