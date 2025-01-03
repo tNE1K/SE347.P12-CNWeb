@@ -63,3 +63,8 @@ class Chat:
             return False
         chat_exists = db.chats.find_one({"participants": {"$all": participants}}) is not None
         return chat_exists
+    
+    @staticmethod
+    def delete_chat(chat_id):
+        db.chats.delete_one({"_id": ObjectId(chat_id)})
+        # db.messages.delete_many({"chatId": ObjectId(chat_id)})

@@ -224,3 +224,27 @@ def handle_create_chat(payload):
             "isGroupChat": is_group_chat
         }
     }), 200
+
+@chat_blueprint.route('/delete', methods=['DELETE'])
+@token_required
+def delete_chat(payload):
+    data = request.get_json()
+    chat_id = data['chat_id']
+    print("Received request to delete chat with ID:", chat_id)
+    if not chat_id:
+        print("Chat ID not provided")
+        return jsonify({"error": "Chat ID is required"}), 400
+    try:
+        Chat.delete_chat(chat_id)
+        Message.delete_message(chat_id)
+        print("Chat deleted successfully")
+        return jsonify({
+            "status": "success",
+            "message": "Chat deleted successfully"
+        }), 200
+    except Exception as e:
+        print("Error deleting chat:", str(e))
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500

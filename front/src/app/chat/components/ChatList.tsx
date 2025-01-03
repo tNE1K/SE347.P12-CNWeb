@@ -6,6 +6,8 @@ import 'react-notifications-component/dist/theme.css'
 import axios from "axios";
 import { useAuth } from "@/app/component/authProvider";
 import { formatDistanceToNow } from "date-fns";
+import IconButton from "@mui/material/IconButton/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface ChatListProps {
   onSelectChat: (chatId: string, receiver: string) => void;
@@ -217,16 +219,41 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                 className="cursor-pointer transition-colors hover:bg-gray-50"
               >
                 <div className="space-y-2 p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="font-medium">
+                    <div className="flex items-start justify-between">
+                    <div className="flex-1 font-medium truncate">
                       {chat.isGroupChat ? "Group Chat" : chat.receiverName}
                     </div>
                     {chat.lastMessage?.timestamp && (
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
+                      <span className="mt-2 ml-2 text-xs text-gray-500 whitespace-nowrap">
+                      {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
                       </span>
                     )}
-                  </div>
+                    <IconButton
+                      aria-label="delete"
+                      size="small"
+                      className="ml-2 mt-"
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'red')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                      onClick={async () => {
+                        if (window.confirm("Are you sure you want to delete this chat?")) {
+                          try {
+                            await axios.delete(`http://127.0.0.1:5000/chat/delete`, {
+                              data: { chat_id: chat.id },
+                              withCredentials: true,
+                            });
+                            setReloadTrigger((prev) => !prev);
+                            window.location.reload(); // Reload the entire /chat page
+                          } catch (error) {
+                            setError(
+                              error instanceof Error ? error.message : "Failed to delete chat",
+                            );
+                          }
+                        }
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                    </div>
                   {chat.lastMessage && (
                     <div className="flex items-center justify-between">
                       <p className="truncate text-sm text-gray-600">
