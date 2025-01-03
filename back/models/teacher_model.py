@@ -29,7 +29,7 @@ class Teacher:
 
     @staticmethod
     def verify_teacher(id):
-        return user_collection.update_one({"_id": ObjectId(id)}, {"$set" : {"role": "teacher"}})
+        return user_collection.update_one({"_id": ObjectId(id)}, {"$set" : {"role": "teacher"}, "$set": {"teacherVerifyRequest": False}})
     
     @staticmethod
     def decline_teacher(id):
