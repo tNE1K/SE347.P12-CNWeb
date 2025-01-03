@@ -7,8 +7,8 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import { useState } from "react";
+import StatisticTable from "./admin_statisticTable";
 import TeacherRequestTable from "./admin_teacherRequestTable";
-
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -83,7 +83,7 @@ export default function AdminTabs() {
         <UserDataTable key={tableKey} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <StatisticTable/>
       </TabPanel>
       <TabPanel value={value} index={3}>
         <TeacherRequestTable/>
