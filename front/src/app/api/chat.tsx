@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.MY_API_URL}/chat`;
+const API_URL = `http://127.0.0.1:5000/chat`;
 
 export const fetchInfo = async () => {
   try {

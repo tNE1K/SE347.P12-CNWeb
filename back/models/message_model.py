@@ -72,3 +72,7 @@ class Message:
             "recipient": user_id,
             "isRead": False
         })
+    
+    @staticmethod
+    def delete_message(chat_id):
+        db.messages.delete_many({"chatId": str(chat_id)})

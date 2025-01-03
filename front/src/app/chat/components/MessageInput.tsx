@@ -1,3 +1,5 @@
+import { Button } from "@mui/material";
+import SendIcon from '@mui/icons-material/Send';
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 
@@ -24,8 +26,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage ,sender, reci
         timestamp: new Date().toISOString(),
       };
 
-      console.log("Payload to be sent:", payload);
-
       socket?.emit("send_message", payload, (response: { status: string; content: string }) => {
         if (response?.status === "success") {
           console.log("Message sent successfully via socket!");
@@ -51,37 +51,54 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage ,sender, reci
   };
 
   return (
-    <form className="p-4 border-t flex items-center" onSubmit={handleSend}>
-      <textarea
-        value={content}
-        onChange={(e) => {
-          setInput(e.target.value);
-          e.target.style.height = "auto"; // Reset chiều cao trước
-          e.target.style.height = `${e.target.scrollHeight}px`; // Đặt chiều cao theo nội dung
-        }}
-        placeholder="Type a message"
-        className="flex-grow border rounded px-2 py-1 resize-none"
-        rows={1} // Chiều cao mặc định
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault(); // Ngăn hành động xuống dòng với Enter (không nhấn Shift)
-            handleSend(e);
-          }
-        }}
-        ref={(ref) => {
-          if (ref && content === "") {
-            ref.style.height = "auto"; // Reset chiều cao nếu content trống
-          }
-        }}
-      />
-      <button
-        type="submit"
-        className="ml-2 px-4 py-1 border rounded bg-blue-500 text-white"
-      >
-        Send
-      </button>
-      {status && <p className="text-sm text-gray-500 ml-2">{status}</p>}
-    </form>
+    <form className="p-4 border-t flex items-center justify-between"
+      onSubmit={handleSend}
+      style={{
+        height: "60px",
+        alignItems: "center",
+      }}
+>
+  <textarea
+    value={content}
+    onChange={(e) => {
+      setInput(e.target.value);
+
+      const element = e.target;
+      element.style.height = "auto"; 
+      element.style.height = `${element.scrollHeight}px`; 
+    }}
+    placeholder="Type a message"
+    className="flex-grow border rounded px-2 py-1 resize-none"
+    rows={1}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); 
+        handleSend(e);
+      }
+    }}
+    ref={(ref) => {
+      if (ref && content === "") {
+        ref.style.height = "auto"; 
+      }
+    }}
+    style={{
+      overflow: "hidden", 
+      maxHeight: "70px", 
+      flexGrow: 1, 
+    }}
+  />
+  <Button
+    type="submit"
+    style={{
+      marginLeft: "8px",
+      height: "fit-content",
+    }}
+    variant="contained"
+    endIcon={<SendIcon />}
+  >
+    Send
+  </Button>
+</form>
 
   );
 };

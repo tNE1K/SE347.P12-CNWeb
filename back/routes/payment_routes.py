@@ -15,7 +15,7 @@ db = client["backend"]
 courses_collection = db['courses']  
 payment_blueprint = Blueprint("payment", __name__)
 #CORS(payment_blueprint, origins="*", supports_credentials=True)
-CORS(payment_blueprint, origins=["http://"+ Config.API +":3000"], supports_credentials=True)
+CORS(payment_blueprint, origins=["http://127.0.0.1:3000"], supports_credentials=True)
 # Configurations (replace with your real VNPAY configurations)
 VNPAY_TMN_CODE = "DEXN209R" #for testing only
 VNPAY_PAYMENT_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
