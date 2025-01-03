@@ -35,11 +35,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     const fetchChats = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://127.0.0.1:5000/chat/list", {
+        const response = await fetch("http://localhost:5000/chat/list", {
           method: "GET",
           credentials: "include",
         });
-
         if (!response.ok) {
           throw new Error("Failed to fetch chats");
         }
@@ -50,24 +49,26 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         }
       } catch (error) {
         console.error("Error fetching chats:", error);
-        setError(error instanceof Error ? error.message : "Failed to load chats");
+        setError(
+          error instanceof Error ? error.message : "Failed to load chats",
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchChats();
-  }, []);
+  }, [user]);
 
   const handleSelectChat = (chatId: string, receiver: string) => {
-    onSelectChat(chatId,receiver);
+    onSelectChat(chatId, receiver);
   };
 
   const handleCreateChat = async () => {
     if (!newChatUsername.trim()) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/chat/create", {
+      const response = await fetch("http://localhost:5000/chat/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ receiver: newChatUsername }),
@@ -92,10 +93,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     return (
       <div className="w-1/5 border-r border-gray-300 p-4">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-6 w-1/2 rounded bg-gray-200"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              <div key={i} className="h-16 rounded bg-gray-200"></div>
             ))}
           </div>
         </div>
@@ -111,15 +112,18 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     );
   }
 
-  function formatDistanceToNow(date: Date, options: { addSuffix: boolean }): React.ReactNode {
+  function formatDistanceToNow(
+    date: Date,
+    options: { addSuffix: boolean },
+  ): React.ReactNode {
     return formatDistanceToNowFn(date, options);
   }
 
   return (
     <div className="w-1/5 border-r border-gray-300">
-      <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
+      <div className="max-h-[calc(100vh-8rem)] overflow-y-auto">
         {chats.length === 0 ? (
-          <div className="p-4 text-gray-500 text-center">
+          <div className="p-4 text-center text-gray-500">
             <p>Không có cuộc trò chuyện nào</p>
           </div>
         ) : (
@@ -127,23 +131,30 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
             {chats.map((chat) => (
               <li
                 key={chat.id}
-                onClick={() => handleSelectChat(chat.id, chat.participants.receiver)}
-                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() =>
+                  handleSelectChat(chat.id, chat.participants.receiver)
+                }
+                className="cursor-pointer transition-colors hover:bg-gray-50"
               >
-                <div className="p-4 space-y-2">
-                  <div className="flex justify-between items-start">
+                <div className="space-y-2 p-4">
+                  <div className="flex items-start justify-between">
                     <div className="font-medium">
-                      {chat.isGroupChat ? "Group Chat" : chat.participants.receiver}
+                      {chat.isGroupChat
+                        ? "Group Chat"
+                        : chat.participants.receiver}
                     </div>
                     {chat.lastMessage?.timestamp && (
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
+                        {formatDistanceToNow(
+                          new Date(chat.lastMessage.timestamp),
+                          { addSuffix: true },
+                        )}
                       </span>
                     )}
                   </div>
                   {chat.lastMessage && (
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-600 truncate">
+                    <div className="flex items-center justify-between">
+                      <p className="truncate text-sm text-gray-600">
                         {chat.lastMessage.content || "No messages yet"}
                       </p>
                     </div>
