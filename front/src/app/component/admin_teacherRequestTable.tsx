@@ -8,7 +8,7 @@ export default function TeacherRequestTable() {
   const handleAccept = async (id: string) => {
   console.log("Test:", id);
   try {
-    const response = await axios.post('http://127.0.0.1:5000/admin/accept_teacher', 
+    const response = await axios.post(`${process.env.MY_API_URL}/admin/accept_teacher`, 
             { _id: id },
             { withCredentials: true }
     );
@@ -21,7 +21,7 @@ export default function TeacherRequestTable() {
 const handleDecline = async (id: string) => {
   console.log("Test:", id);
   try {
-    const response = await axios.post('http://127.0.0.1:5000/admin/decline_teacher',
+    const response = await axios.post(`${process.env.MY_API_URL}/admin/decline_teacher`,
       { _id: id },
       { withCredentials: true }
     );

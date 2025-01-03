@@ -57,7 +57,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!selectedChat || !user?.id) return;
 
-    const socketConnection = io("http://127.0.0.1:5000", {
+    const socketConnection = io(`${process.env.MY_API_URL}`, {
       query: { user_id: user.id, chat_id: selectedChat },
       withCredentials: true,
       reconnection: true, 
