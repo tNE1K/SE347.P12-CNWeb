@@ -156,7 +156,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <div className="max-h-[calc(100vh-8rem)] overflow-y-auto">
         {chats.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
-            <p>No conversations found</p>
+            {chats.length === 0 && <p>No conversations found</p>}
             <div className="mt-4">
               <TextField
                 id="standard-basic"
@@ -185,7 +185,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         ) : (
           <ul className="divide-y divide-gray-200">
             <div className="p-4 text-center text-gray-500">
-            <div className="mt-4">
+            <div className="mt-2">
               <TextField
                 id="standard-basic"
                 label="Enter username to create new chat"
@@ -241,8 +241,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                               data: { chat_id: chat.id },
                               withCredentials: true,
                             });
-                            setReloadTrigger((prev) => !prev);
-                            window.location.reload(); // Reload the entire /chat page
+                            window.location.reload(); 
                           } catch (error) {
                             setError(
                               error instanceof Error ? error.message : "Failed to delete chat",
