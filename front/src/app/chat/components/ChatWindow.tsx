@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/app/component/authProvider";
+import CircularProgress from "@mui/material/CircularProgress";
+
 
 interface Message {
   _id: string;
@@ -23,36 +25,58 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
     }
   }, [messages]);
 
-  const userMessages = messages.filter((msg) => msg.sender === user?.id);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) return;
-  }, [messages, user]);
+    // Simulate a loading delay
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
-  // console.log("Chat messages chat windows:", messages);
+    return () => clearTimeout(timer);
+  }, []);
+
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <CircularProgress />
+        </div>
+      );
+    }
+
   return (
-    <div className="flex-1 p-4 overflow-auto flex flex-col max-h-[calc(85vh)]">
+    console.log("ChatWindow"),
+    <div
+      className="flex-1 p-4 overflow-y-auto flex flex-col"
+      style={{
+        maxHeight: "calc(90vh - 4rem)", 
+        height: "auto",
+        overflowX: "hidden",
+      }}
+    >
       {messages.map((msg, index) => (
         <div
           key={msg._id || `message-${index}`}
           className={`p-2 mb-2 rounded max-w-xs break-words ${
-            msg.sender === user?.id
-              ? "bg-blue-100 self-end"
-              : "bg-gray-200 self-start"
+            msg.sender === user?.id ? "bg-blue-100 self-end" : "bg-gray-200 self-start"
           }`}
-          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+          style={{
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            wordWrap: "break-word",
+          }}
         >
-          {msg.content}
+          <p>{msg.content}</p>
           <p
-          className={`text-xs ${
-            msg.sender === user?.id ? "text-right" : "text-left"
-          }`}
-        >
-          {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
+            className={`text-xs mt-1 ${
+              msg.sender === user?.id ? "text-right" : "text-left"
+            }`}
+          >
+            {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
         </div>
       ))}
       <div ref={messagesEndRef} />

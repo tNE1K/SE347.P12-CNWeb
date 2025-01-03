@@ -6,6 +6,7 @@ from models.chat_model import Chat
 from flask_cors import cross_origin
 from bson import ObjectId
 from datetime import datetime
+from models.user_model import User
 
 chat_blueprint = Blueprint('chat', __name__)
 
@@ -47,7 +48,6 @@ def setup_socketio(socketio):
             print(f"Message from {sender_id} to room {room}: {content}")
             emit("receive_message", {"sender": sender_id, "content": content}, room=room, skip_sid=sender_sid)
 
-            # Save the message to MongoDB
             message = Message(
                 content=content,
                 sender=sender_id,
@@ -57,6 +57,7 @@ def setup_socketio(socketio):
                 attachment_url=attachment_url
             )
             message_id = message.save()
+            Chat.update_last_message(room, content, sender_id) 
             print(f"Message saved to MongoDB with ID: {message_id}")
 
             return {"status": "success", "content": "Message sent successfully!"}
@@ -114,7 +115,11 @@ def get_chat_list(payload):
 
             sender = chat['participants'][0] if chat['participants'][0] == user_id else chat['participants'][1]
             receiver = chat['participants'][1] if chat['participants'][0] == user_id else chat['participants'][0]
-
+            
+            user = User.find_by_id(ObjectId(receiver))
+            if not user:
+                return jsonify({"error": f"User with ID {receiver} not found"}), 400
+            user_name = user['firstName'] + " " + user['lastName']
             chat_data = {
                 "id": str(chat['_id']),
                 "participants": {
@@ -122,6 +127,7 @@ def get_chat_list(payload):
                     "receiver": receiver  # người nhận
                 }, 
                 "isGroupChat": chat.get('isGroupChat', False),
+                "receiverName": user_name,
                 "lastMessage": {
                     "senderId": last_message.get('senderId'),
                     "content": last_message.get('content'),
@@ -179,17 +185,42 @@ def get_chat_messages(payload):
             "message": str(e)
         }), 500
 
-# @chat_blueprint.route('/send', methods=['POST'])
-# @token_required
-# def send_chat_message():
-#     data = request.json
-#     sender = data.get('sender')
-#     recipient = data.get('recipient')
-#     message = data.get('message')
+@chat_blueprint.route('/create', methods=['POST'])
+@token_required
+def handle_create_chat(payload):
+    data = request.get_json()
+    user_id = data['senderId']
+    participants = data['participants']
+    content = data['content']
+    is_group_chat = data['isGroupChat']
 
-#     if not sender or not recipient or not message:
-#         return jsonify({"error": "Sender, recipient, and message are required"}), 400
+    user = User.find_by_email(participants)
 
-#     msg = Message(sender, recipient, message)
-#     msg.save() 
-#     return jsonify({"success": True}), 200
+    if user:
+        temp = str(user['_id'])
+    else:
+        return jsonify({"error": f"User with email {participants} not found"}), 400
+
+    if not user_id or not participants:
+        return jsonify({"error": "User ID and participants are required"}), 400
+    
+    existing_chat = Chat.check_participants_exist([user_id, temp])
+    print(existing_chat)
+    if existing_chat:
+        return jsonify({"error": "Chat already exists"}), 400
+
+    print(f"Creating chat with participants: {participants}, is_group_chat: {is_group_chat}")
+    chat_id = Chat.create_chat(temp,user_id,is_group_chat)
+    print(f"Chat created with ID: {chat_id}")
+    print(f"Updating last message with content: {content}, user_id: {user_id}")
+    Chat.update_last_message(chat_id, content, user_id)
+    print("Last message updated")
+
+    return jsonify({
+        "status": "success",
+        "data": {
+            "participants": temp,
+            "content": content,
+            "isGroupChat": is_group_chat
+        }
+    }), 200

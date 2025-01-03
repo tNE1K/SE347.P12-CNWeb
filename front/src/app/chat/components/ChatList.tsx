@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { formatDistanceToNow as formatDistanceToNowFn } from "date-fns";
+import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import 'react-notifications-component/dist/theme.css'
+import axios from "axios";
 import { useAuth } from "@/app/component/authProvider";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatListProps {
   onSelectChat: (chatId: string, receiver: string) => void;
@@ -18,6 +23,7 @@ interface Chat {
     sender: string;
     receiver: string;
   };
+  receiverName: string;
   isGroupChat: boolean;
   lastMessage: LastMessage;
 }
@@ -25,32 +31,36 @@ interface Chat {
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reloadTrigger, setReloadTrigger] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newChatUsername, setNewChatUsername] = useState(""); // State để lưu giá trị tìm kiếm
+  const [newChatUsername, setNewChatUsername] = useState("");
   const { user } = useAuth();
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
-
+    console.log("Fetching chats for user:", user.id);
     const fetchChats = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/chat/list", {
+        const response = await fetch("http://127.0.0.1:5000/chat/list", {
           method: "GET",
           credentials: "include",
         });
         if (!response.ok) {
           throw new Error("Failed to fetch chats");
         }
-
         const result = await response.json();
-        if (result.status === "success" && result.data.chats) {
+        if (result.status === "success") {
           setChats(result.data.chats);
+        } else {
+          throw new Error("Failed to fetch chats");
         }
+
       } catch (error) {
-        console.error("Error fetching chats:", error);
         setError(
-          error instanceof Error ? error.message : "Failed to load chats",
+          error instanceof Error ? error.message : "Failed to fetch chats",
         );
       } finally {
         setLoading(false);
@@ -58,97 +68,162 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     };
 
     fetchChats();
-  }, [user]);
+  }, [user,reloadTrigger]);
 
-  const handleSelectChat = (chatId: string, receiver: string) => {
-    onSelectChat(chatId, receiver);
+  useEffect(() => {
+    if (error) {
+      setNotificationMessage(`Error: ${error}`);
+      setShowNotification(true);
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+        setError(null); // Clear the error after hiding the notification
+        setNotificationMessage(null);
+      }, 3000); // Hide the notification after 3 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  const handleSelectChat = (chatId: string, receiverName: string) => {
+    onSelectChat(chatId, receiverName);
   };
 
   const handleCreateChat = async () => {
     if (!newChatUsername.trim()) return;
 
     try {
-      const response = await fetch("http://localhost:5000/chat/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiver: newChatUsername }),
-        credentials: "include",
-      });
+      if (!user?.id) return;
+      console.log("Creating chat with:", newChatUsername);
+      const response = await axios.post("http://127.0.0.1:5000/chat/create", {
+          participants: newChatUsername,
+          senderId: user.id,
+          content: "",
+          timestamp: new Date().toISOString(),
+          isGroupChat: false,
+          nameGroupChat: "",
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      const result = response.data;
+      console.log("Create chat result:", result);
+      if (result.status === "success") {
+        setReloadTrigger((prev) => !prev);
+        setNewChatUsername(""); 
+        setNotificationMessage("Chat created successfully with a new person!");
+        setShowNotification(true);
+        const timer = setTimeout(() => {
+          setShowNotification(false);
+          setNotificationMessage(null);
+        }, 3000); // Hide the notification after 3 seconds
 
-      if (!response.ok) {
-        throw new Error("Failed to create chat");
-      }
-
-      const result = await response.json();
-      if (result.status === "success" && result.data.chat) {
-        setChats((prevChats) => [result.data.chat, ...prevChats]); // Cập nhật danh sách chat
-        setNewChatUsername(""); // Reset ô nhập
+        return () => clearTimeout(timer);
       }
     } catch (error) {
-      console.error("Error creating chat:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to create chat",
+      );
     }
   };
 
+
+  if (error && showNotification) {
+    return (
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg">
+        User not found or Chat has been created
+      </div>
+    );
+  }
+  
   if (loading) {
     return (
-      <div className="w-1/5 border-r border-gray-300 p-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 w-1/2 rounded bg-gray-200"></div>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 rounded bg-gray-200"></div>
-            ))}
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-full ml-30">
+        <CircularProgress size={60} thickness={5} />
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="w-1/3 border-r border-gray-300 p-4">
-        <div className="text-red-500">Error: {error}</div>
-      </div>
-    );
-  }
-
-  function formatDistanceToNow(
-    date: Date,
-    options: { addSuffix: boolean },
-  ): React.ReactNode {
-    return formatDistanceToNowFn(date, options);
   }
 
   return (
     <div className="w-1/5 border-r border-gray-300">
+      {showNotification && (
+        <div className="fixed top-0 left-0 right-0 p-4 bg-green-500 text-white text-center">
+          {notificationMessage}
+        </div>
+      )}
       <div className="max-h-[calc(100vh-8rem)] overflow-y-auto">
         {chats.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
-            <p>Không có cuộc trò chuyện nào</p>
+            <p>No conversations found</p>
+            <div className="mt-4">
+              <TextField
+                id="standard-basic"
+                label="Enter username to create new chat"
+                variant="standard"
+                fullWidth
+                value={newChatUsername}
+                onChange={(e) => setNewChatUsername(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleCreateChat();
+                  }
+                }}
+              />
+            </div>
+            <div className="mt-4">
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleCreateChat}
+              >
+                Start conversation
+              </Button>
+            </div>
           </div>
         ) : (
           <ul className="divide-y divide-gray-200">
+            <div className="p-4 text-center text-gray-500">
+            <div className="mt-4">
+              <TextField
+                id="standard-basic"
+                label="Enter username to create new chat"
+                variant="standard"
+                fullWidth
+                value={newChatUsername}
+                onChange={(e) => setNewChatUsername(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleCreateChat();
+                  }
+                }}
+              />
+            </div>
+            <div className="mt-4">
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleCreateChat}
+              >
+                Start conversation
+              </Button>
+            </div>
+          </div>
             {chats.map((chat) => (
               <li
-                key={chat.id}
+                key={ chat.id}
                 onClick={() =>
-                  handleSelectChat(chat.id, chat.participants.receiver)
+                  handleSelectChat(chat.id, chat.receiverName)
                 }
                 className="cursor-pointer transition-colors hover:bg-gray-50"
               >
                 <div className="space-y-2 p-4">
                   <div className="flex items-start justify-between">
                     <div className="font-medium">
-                      {chat.isGroupChat
-                        ? "Group Chat"
-                        : chat.participants.receiver}
+                      {chat.isGroupChat ? "Group Chat" : chat.receiverName}
                     </div>
                     {chat.lastMessage?.timestamp && (
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(
-                          new Date(chat.lastMessage.timestamp),
-                          { addSuffix: true },
-                        )}
+                        {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
                       </span>
                     )}
                   </div>
@@ -165,25 +240,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           </ul>
         )}
       </div>
-
-      {/* Ô tìm kiếm tạo chat mới */}
-      {/* <div className="p-4 border-t border-gray-300">
-        <input
-          type="text"
-          value={newChatUsername}
-          onChange={(e) => setNewChatUsername(e.target.value)}
-          placeholder="Nhập tên người dùng để bắt đầu trò chuyện mới"
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-        <button
-          onClick={handleCreateChat}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full"
-        >
-          Tạo cuộc trò chuyện
-        </button>
-      </div> */}
     </div>
+
   );
 };
-
 export default ChatList;

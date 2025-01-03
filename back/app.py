@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 
 # Register blueprints
@@ -38,7 +38,7 @@ app.register_blueprint(chat_blueprint, url_prefix="/chat")
 app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
 
 
-socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000"], 
+socketio = SocketIO(app, cors_allowed_origins=["http://127.0.0.1:3000"], 
                     ping_interval=25,  # Seconds between pings
                     ping_timeout=60,    # Timeout for ping response
                     reconnect=True,    # Enable auto reconnection

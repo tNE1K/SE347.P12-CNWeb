@@ -2,7 +2,7 @@ import axios from "axios";
 
 export async function sendVerifyDocument(formData: FormData, handleClose: () => void) {
   try {
-    const response = await axios.post(`${process.env.MY_API_URL}/user/upload-verify-documents/`, formData, {
+    const response = await axios.post(`http://127.0.0.1:5000/user/upload-verify-documents/`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
