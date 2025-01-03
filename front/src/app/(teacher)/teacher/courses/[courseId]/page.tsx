@@ -49,7 +49,7 @@ export default function page() {
           className="h-[200px] w-[300px] rounded-lg border-[1px] bg-contain bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${course.cover})` }}
         ></div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
           <p className="text-2xl font-semibold">{course.title}</p>
           <p className="mb-1 text-sm font-semibold text-gray-500">
             {course.description}
@@ -69,7 +69,7 @@ export default function page() {
             startIcon={<EditIcon />}
             sx={{ textTransform: "none" }}
             onClick={toggle}
-            className="mt-2"
+            className="mt-2 max-w-[200px]"
           >
             Edit course
           </Button>
@@ -79,7 +79,7 @@ export default function page() {
             startIcon={<DeleteIcon />}
             sx={{ textTransform: "none" }}
             onClick={() => setShowDeleteDialog(true)}
-            className="mt-2"
+            className="mt-2 max-w-[200px]"
           >
             Delete course
           </Button>

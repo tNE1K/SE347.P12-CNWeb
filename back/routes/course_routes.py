@@ -3,14 +3,15 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
-
+from config import Config
 from models.lesson_model import Lesson
 from models.course_model import Course
 import os
 import json 
 import math
 course_blueprint = Blueprint('course', __name__)
-CORS(course_blueprint, origins=["http://127.0.0.1:3000"], supports_credentials=True)
+print("http://"+ Config.API +":3000")
+CORS(course_blueprint, origins=["http://"+ Config.API +":3000"], supports_credentials=True)
 # MongoDB client setup (replace with your connection details)
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client['backend']

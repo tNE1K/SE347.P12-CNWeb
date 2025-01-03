@@ -29,13 +29,15 @@ import {
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "react-toastify";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { labels } from "@/app/utils/labels";
 // import { labels } from "~/constant/labels";
 // import routePath from "~/constant/routePath";
 // import { generatePathname } from "~/helper/generatePathname";
 // import useCreateCourse from "~/hooks/course/useCreateCourse";
 // import { useUploadImage } from "~/hooks/useUploadFile";
 
-const labels = ["C#", "Javascript", "Java", "C++", "Python"];
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -159,7 +161,7 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
           component="div"
           className="hidden sm:block"
         >
-          Create course description
+          Create course
         </Typography>
         <IconButton
           edge="start"
@@ -185,13 +187,15 @@ function CustomDialog({ open, toggle }: { open: boolean; toggle: () => void }) {
           />
           {error !== "" && <p className="text-sm text-red-500">{error}</p>}
         </div>
-        <TextField
-          label="Course description"
-          name="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          multiline
-        />
+        <div className="flex flex-col">
+          <p className="mb-[4px]">Description:</p>
+          <ReactQuill
+            theme="snow"
+            value={description}
+            className="h-[140px] pb-[50px]"
+            onChange={setDescription}
+          />
+        </div>
         <TextField
           label="Price"
           name="price"

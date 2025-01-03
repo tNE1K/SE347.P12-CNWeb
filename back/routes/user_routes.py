@@ -10,7 +10,7 @@ from config import Config
 JWT_SECRET = os.getenv("JWT_SECRET")
 
 user_blueprint = Blueprint('/user', __name__)
-CORS(user_blueprint, origins=["http://127.0.0.1:3000"], supports_credentials=True)
+CORS(user_blueprint, origins=["http://"+ Config.API +":3000"], supports_credentials=True)
 # Azure Blob Storage setup
 blob_service_client = BlobServiceClient.from_connection_string(Config.AZURE_STORAGE_CONNECTION_STRING)
 container_name = "se347temp"  # Replace with your Azure Blob container name
