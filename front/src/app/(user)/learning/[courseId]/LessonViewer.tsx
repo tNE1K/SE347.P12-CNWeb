@@ -15,7 +15,7 @@ import { answerTestSelection } from "@/app/api/lesson";
 import { toast } from "react-toastify";
 import { createUserLesson } from "@/app/api/course";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/component/authProvider";
 
 export default function LessonViewer({ lesson }: { lesson: ILesson }) {
@@ -23,6 +23,8 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
     lesson?.type === "testselection"
       ? (lesson?.resource as ISelectionLesson[])
       : [];
+  const searchParams = useSearchParams();
+  const lessonIdx = searchParams.get("lessonIdx");
   const params = useParams<{ courseId: string }>();
   const { user } = useAuth();
   const [curQuiz, setCurQuiz] = useState(0);
@@ -77,6 +79,7 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
       setCorrect(allCorrect);
       setShowResult(true);
       setShowExplan(true);
+      setCurQuiz(0);
     } catch (error) {
       console.error("Error submitting answers:", error);
     }
@@ -92,6 +95,13 @@ export default function LessonViewer({ lesson }: { lesson: ILesson }) {
       userId: user.id,
     });
   };
+  useEffect(() => {
+    setShowExplan(false);
+    setShowResult(false);
+    setCorrect(false);
+    setAnswers({});
+  }, [lessonIdx]);
+  if (!lesson) return <></>;
   return (
     <div>
       {lesson.type === "video" && (

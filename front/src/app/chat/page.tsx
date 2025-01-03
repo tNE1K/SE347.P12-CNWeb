@@ -23,6 +23,19 @@ export default function ChatPage() {
   const { user } = useAuth();
 
   useEffect(() => {
+    const socketConnection = io(`${process.env.MY_API_URL}`, {
+      query: {
+        user_id: "xxxxxxxxxxxxxxxxxxxx",
+        chat_id: "yyyyyyyyyyyyyyyyyyyy",
+      },
+      withCredentials: true,
+      reconnection: true,
+    });
+    socketConnection.on("connect", () => {
+      console.log(`Connected to chat ${selectedChat}`);
+    });
+  }, []);
+  useEffect(() => {
     if (!user?.id) return;
 
     const fetchUserDetail = async () => {

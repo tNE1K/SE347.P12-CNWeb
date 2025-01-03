@@ -32,6 +32,7 @@
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-notifications-component": "^4.0.1",
     "react-player": "^2.16.0",
+    "react-quill-new": "^3.3.3",
     "react-toastify": "^11.0.2",
     "recharts": "^2.15.0",
     "socket.io-client": "^4.8.1",
