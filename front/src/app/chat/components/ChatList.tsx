@@ -138,7 +138,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full ml-30">
+      <div className="flex items-center justify-center h-full ml-60">
         <CircularProgress size={60} thickness={5} />
       </div>
     );

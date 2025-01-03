@@ -6,6 +6,11 @@ import MessageInput from "./components/MessageInput";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/component/authProvider";
 import Navbar from "./components/Navbar";
+import Button from "@mui/material/Button";
+import { Avatar } from "@mui/material";
+import PageviewIcon from '@mui/icons-material/Pageview';
+import { blue } from '@mui/material/colors';
+
 
 interface Message {
   _id: string;
@@ -126,11 +131,14 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen">  
-      <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4 px-8">
-        <div className="text-2xl font-bold">Messages</div>
+      <nav className="z-10 flex w-fu  l4 items-center justify-between border-b border-500 py-4 px-8">
+        <div className="text-2xl text-blue-700 font-bold">Messages</div>
         <div className="text-lg flex items-center space-x-4">
-          <span>{selectedChat?.receiverName}</span>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Settings</button>
+            <span className="text-xl font-semibold">{selectedChat?.receiverName}</span>
+            {/* <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Settings</button> */}
+            <Avatar sx={{ bgcolor: blue[700] }}>
+              <PageviewIcon />
+            </Avatar>
         </div>
       </nav>
       <div className="flex flex-1">
