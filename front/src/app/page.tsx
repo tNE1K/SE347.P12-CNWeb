@@ -120,7 +120,6 @@ export default function Home() {
             prevEl: '.swiper-button-prev', // Custom prev button
           }}
           pagination={{ clickable: true }}
-          loop
           style={{ maxWidth: "800px", margin: "20 auto" }}
           autoplay={{
             delay: 3000, // Thời gian chuyển slide tự động (3 giây)
