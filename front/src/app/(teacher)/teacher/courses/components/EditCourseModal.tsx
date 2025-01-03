@@ -21,7 +21,9 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import CloseIcon from "@mui/icons-material/Close";
 import { ICourse, UpdateCoursePayload } from "@/app/types/course";
-const labels = ["C#", "Javascript", "Java", "C++", "Python"];
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { labels } from "@/app/utils/labels";
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -173,13 +175,15 @@ export function EditCourseModal({
           />
           {error !== "" && <p className="text-sm text-red-500">{error}</p>}
         </div>
-        <TextField
-          label="Course description"
-          name="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          multiline
-        />
+        <div className="flex flex-col">
+          <p className="mb-[4px]">Description:</p>
+          <ReactQuill
+            theme="snow"
+            value={description}
+            className="h-[140px] pb-[50px]"
+            onChange={setDescription}
+          />
+        </div>
         <TextField
           label="Price"
           name="price"
