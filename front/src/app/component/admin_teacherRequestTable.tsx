@@ -9,7 +9,7 @@ export default function TeacherRequestTable() {
     console.log("Test:", id);
     try {
       const response = await axios.post(
-        "http://localhost:5000/admin/accept_teacher",
+        `${process.env.MY_API_URL}/admin/accept_teacher`,
         { _id: id },
         { withCredentials: true },
       );
@@ -23,7 +23,7 @@ export default function TeacherRequestTable() {
     console.log("Test:", id);
     try {
       const response = await axios.post(
-        "http://localhost:5000/admin/decline_teacher",
+        `${process.env.MY_API_URL}/admin/decline_teacher`,
         { _id: id },
         { withCredentials: true },
       );
