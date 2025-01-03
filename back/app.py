@@ -19,15 +19,9 @@ import eventlet
 app = Flask(__name__)
 app.config.from_object(Config)
 
-socketio = SocketIO(app, cors_allowed_origins="*", 
-                    ping_interval=25,  # Seconds between pings
-                    ping_timeout=60,    # Timeout for ping response
-                    reconnect=True,    # Enable auto reconnection
-                    reconnection_attempts=5,  # Number of reconnection attempts
-                    reconnection_delay=2,  # Delay before retrying reconnect
-                    reconnection_delay_max=10)  # Max delay between reconnect attempts
 
-CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app, supports_credentials=True, origins=["http://localhost:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
 
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
@@ -41,9 +35,17 @@ app.register_blueprint(teacher_blueprint, url_prefix="/teacher")
 app.register_blueprint(comments_blueprint, url_prefix="/comment")
 app.register_blueprint(media_blueprint, url_prefix="/media")
 app.register_blueprint(chat_blueprint, url_prefix="/chat")
-
-setup_socketio(socketio)
 app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
+
+
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000"], 
+                    ping_interval=25,  # Seconds between pings
+                    ping_timeout=60,    # Timeout for ping response
+                    reconnect=True,    # Enable auto reconnection
+                    reconnection_attempts=5,  # Number of reconnection attempts
+                    reconnection_delay=2,  # Delay before retrying reconnect
+                    reconnection_delay_max=10)  # Max delay between reconnect attempts
+setup_socketio(socketio)
 # app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
 if __name__ == "__main__":
