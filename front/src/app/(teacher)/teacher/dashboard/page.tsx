@@ -21,7 +21,7 @@ export function TeacherDashboard() {
     queryFn: () => getCourseCount(user?.id),
     enabled: !!user?.id,
   });
-  const totalUniqueUsers = data?.totalUniqueUsersEnroll || 2;
+  const totalUniqueUsers = data?.totalUniqueUsersEnroll || 0;
   const userEnrollData = data?.data || [];
   const totalCourses = courseData?.totalCourses || 0;
   const courseCountData = courseData?.data || [];

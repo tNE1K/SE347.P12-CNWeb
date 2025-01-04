@@ -21,7 +21,7 @@ CORS(payment_blueprint, origins=["http://localhost:3000"], supports_credentials=
 VNPAY_TMN_CODE = "DEXN209R" #for testing only
 VNPAY_PAYMENT_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
 VNPAY_HASH_SECRET_KEY = "PDBGSF700IA65NESBHT4K2B3EGDNYNM9" #for testing only
-VNPAY_RETURN_URL = "http://127.0.0.1:3000/payment/"
+VNPAY_RETURN_URL = "http://localhost:3000/payment/"
 
 
 def generate_payment_id(course_id, user_id):

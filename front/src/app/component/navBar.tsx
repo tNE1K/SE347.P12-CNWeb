@@ -63,7 +63,9 @@ export default function NavBar() {
   const handleNavigateManagePage = () => {
     router.push("/teacher/courses");
   };
-
+  const handlenavigate = () => {
+    router.push("learning/1/livestream");
+  };
   const isTeacher = user?.role === "teacher";
 
   return (
@@ -105,7 +107,6 @@ export default function NavBar() {
           >
             Search
           </Button>
-
           {isTeacher && (
             <Button
               variant="contained"
@@ -117,7 +118,16 @@ export default function NavBar() {
             </Button>
           )}
         </div>
-
+        {isTeacher && (
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ textTransform: "none" }}
+            onClick={handlenavigate}
+          >
+            LIVE
+          </Button>
+        )}
         {isAuthenticated && (
           <Button
             variant="contained"

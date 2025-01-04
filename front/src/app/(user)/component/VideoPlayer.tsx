@@ -5,18 +5,20 @@ import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import NavBar from "@/app/component/navBar";
 import Script from "next/script";
+import { useAuth } from "@/app/component/authProvider";
 
 export default function LiveCourse() {
   const videoRef = useRef(null);
+  const { user } = useAuth();
   const playerRef = useRef(null);
   const [isLive, setIsLive] = useState(false); // Trạng thái kiểm tra livestream
-
+  const isTeacher = user?.role === "teacher";
   useEffect(() => {
     // Kiểm tra xem luồng livestream có sẵn hay không
     const checkStream = async () => {
       try {
         const response = await fetch(
-          "http://192.168.61.252/live/livestream.m3u8",
+          "http://192.168.43.133/live/livestream.m3u8",
           { method: "HEAD" },
         );
         if (response.ok) {
@@ -84,16 +86,24 @@ export default function LiveCourse() {
             height="450"
           >
             <source
-              src="http://192.168.61.252/live/livestream.m3u8"
+              src="http://192.168.43.133/live/livestream.m3u8"
               type="application/x-mpegURL"
             />
             Your browser does not support the video tag.
           </video>
         ) : (
-          <div
-            style={{ color: "#888", fontSize: "100px", textAlign: "center" }}
-          >
-            <h1>There is no livestream now. Please comback later!</h1>
+          <div>
+            {isTeacher && (
+              <div className="mt-[200px] flex flex-col items-center gap-2">
+                <div>Bước 1: Mở OBS</div>
+                <div>Bước 2: Vào Settings -{">"} Stream</div>
+                <div>Bước 3: Ở mục Service chọn Custom</div>
+                <div>
+                  Bước 4: Ở mục Server nhập giá trị: rtmp://10.0.3.87:1935/live/
+                </div>
+                <div>Bước 5: Ở mục Stream Key nhập giá trị: livestream</div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -101,19 +111,6 @@ export default function LiveCourse() {
         src="https://vjs.zencdn.net/7.11.4/video.js"
         strategy="afterInteractive"
       />
-
-      {/* Course Details */}
-      <section
-        style={{ maxWidth: "800px", margin: "0 auto", textAlign: "left" }}
-      >
-        <h2 style={{ color: "#444", fontSize: "24px" }}>Course Overview</h2>
-        <p style={{ color: "#555", fontSize: "16px", lineHeight: "1.6" }}>
-          This course covers advanced topics in web development, including
-          real-time data processing, scalable architectures, and best practices
-          in modern front-end and back-end frameworks. Interact with experts and
-          peers in our live Q&A sessions.
-        </p>
-      </section>
     </div>
   );
 }

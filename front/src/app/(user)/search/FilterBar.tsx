@@ -18,7 +18,7 @@ export default function FilterBar({
 }) {
   const searchParams = useSearchParams();
   const iniLabel = searchParams.get("label") || "";
-  const [value, setValue] = useState<number[]>([0, 10000000]);
+  const [value, setValue] = useState<number[]>([0, 1000000]);
   const [category, setCategory] = useState("");
   const [rating, setRating] = useState<string>("");
 
@@ -54,8 +54,8 @@ export default function FilterBar({
           onChange={handleChange}
           valueLabelDisplay="auto"
           min={0}
-          max={10000000}
-          step={100000}
+          max={1000000}
+          step={1000}
         />
       </div>
       <div className="flex justify-between">

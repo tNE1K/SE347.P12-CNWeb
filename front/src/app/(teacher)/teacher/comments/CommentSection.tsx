@@ -75,7 +75,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
           <div className="w-full rounded-lg border-[1px] bg-white px-4 py-2">
             <div className="flex items-center gap-2">
               <p className={`${isTeacher && "text-blue-500"} font-bold`}>
-                {comment.user_info.fullName}
+                {comment.user_info.firstName + " " + comment.user_info.lastName}
               </p>
               <div className="mb-[2px]">
                 <Rating className="text-base" rating={comment.rating} />
@@ -111,7 +111,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
                       <p
                         className={`${isTeacherReply && "text-blue-500"} font-bold`}
                       >
-                        {el.user_info.fullName}{" "}
+                        {el.user_info.firstName + " " + el.user_info.lastName}{" "}
                         {isTeacherReply && <>(Teacher)</>}
                       </p>
                       <p>{el.content}</p>

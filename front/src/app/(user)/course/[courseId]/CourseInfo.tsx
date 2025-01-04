@@ -83,7 +83,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
           </p>
         </div>
         <div className="mt-6 flex justify-between gap-2">
-          <div
+          {/* <div
             style={{ boxShadow: "0px 0px 8px 0px rgba(0, 0, 0, 0.25)" }}
             className={
               "flex-1 cursor-pointer select-none rounded-[8px] bg-blue-500 px-[16px] py-[12px] text-center font-semibold text-white"
@@ -91,7 +91,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
             onClick={() => {}}
           >
             Thêm vào giỏ hàng
-          </div>
+          </div> */}
         </div>
 
         <div

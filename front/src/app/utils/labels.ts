@@ -1,1 +1,8 @@
-export const labels = ["Go", "Javascript", "Java", "Ruby on rails", "Python"];
+export const labels = [
+  "Go",
+  "Javascript",
+  "Java",
+  "Ruby on rails",
+  "Python",
+  "Lập trình",
+];

@@ -2,12 +2,12 @@
 import Rating from "@/app/(teacher)/components/RatingBar/Rating";
 import { getCourseById } from "@/app/api/course";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CourseInfo from "./CourseInfo";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { MenuItem, Pagination, Select } from "@mui/material";
+import { Button, MenuItem, Pagination, Select } from "@mui/material";
 import { getCommentsByCourseId } from "@/app/api/comments";
 import CommentSection from "@/app/(teacher)/teacher/comments/CommentSection";
 import { useAuth } from "@/app/component/authProvider";
@@ -22,6 +22,7 @@ export default function page() {
     queryKey: ["course-detail", { courseId: params.courseId }],
     queryFn: () => getCourseById(params.courseId),
   });
+  const router = useRouter();
   const course = data?.data || undefined;
   const { data: commentsRes } = useQuery({
     queryKey: [
@@ -34,6 +35,9 @@ export default function page() {
     },
     enabled: !!course?._id,
   });
+  const handlenavigate = () => {
+    router.push("/learning/1/livestream");
+  };
   useEffect(() => {
     if (course) {
       setCourseSlt(course);
@@ -70,9 +74,20 @@ export default function page() {
             <div className="flex items-center gap-4">
               <p className="text-text/md/regular text-white">Giảng viên:</p>
               <p className="text-text/md/semibold text-white underline">
-                {course?.teacher?.fullName}
+                {course?.teacher?.firstName + " " + course?.teacher.lastName}
               </p>
+              <Button
+                variant="contained"
+                color="error"
+                sx={{ textTransform: "none" }}
+                onClick={handlenavigate}
+              >
+                WATCH LIVE
+              </Button>
             </div>
+            <p className="text-text/md/regular text-white">
+              Email: {course.teacher.email}
+            </p>
           </div>
           <div className="basis-[40%]">
             <CourseInfo course={course} />
