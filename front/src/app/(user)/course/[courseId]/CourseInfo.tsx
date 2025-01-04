@@ -1,9 +1,6 @@
-import { ICourse } from "@/app/types/course";
-import {IUser, User} from "@/app/types/user"
-import axios from "axios";
-import React, { useEffect } from "react";
 import { useAuth } from "@/app/component/authProvider";
-import { useRouter } from "next/navigation";
+import { ICourse } from "@/app/types/course";
+import axios from "axios";
 
 function formatToVND(amount: number): string {
   return `${amount.toLocaleString("vi-VN")} đ`;
@@ -44,7 +41,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
         console.log(redirectUrl);
         // Chuyển hướng đến trang xác nhận thanh toán hoặc trang kết quả
         alert("Thanh toán thành công.");  // Điều hướng thành công tới trang xác nhận
-        //window.location.href = redirectUrl;
+        window.location.href = redirectUrl;
       } else {
         // Xử lý khi thanh toán thất bại
         alert("Thanh toán không thành công. Vui lòng thử lại!");
