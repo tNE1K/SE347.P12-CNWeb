@@ -9,11 +9,14 @@ import { User } from "@/app/types/user";
 import { useRouter } from "next/navigation";
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useContext,
   useEffect,
   useState,
 } from "react";
+import { ICourse } from "../types/course";
 
 interface AuthContextType {
   user: User | null;
@@ -21,12 +24,15 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  courseSlt: ICourse | null;
+  setCourseSlt: Dispatch<SetStateAction<ICourse | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [courseSlt, setCourseSlt] = useState<ICourse | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const router = useRouter();
 
@@ -89,7 +95,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, signup, logout, isAuthenticated }}
+      value={{
+        user,
+        login,
+        signup,
+        logout,
+        isAuthenticated,
+        setCourseSlt,
+        courseSlt,
+      }}
     >
       {children}
     </AuthContext.Provider>

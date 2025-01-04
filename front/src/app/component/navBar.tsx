@@ -43,34 +43,35 @@ export default function NavBar() {
     const selectedLabel = event.target.value;
     setCourseType(selectedLabel); // Store the selected label in state
     setCategory(selectedLabel); // Update the category state
-  
+
     console.log(selectedLabel);
-  
+
     // Call the API to fetch courses with the selected label
     try {
       const response = await getCourseByLabel(selectedLabel);
       setCourses(response.data); // Assuming the API returns the list of courses
       console.log(response.data);
       router.push(`/search?kw=&label=${selectedLabel}`);
-      
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
   };
-  
+
   const handleNavigateSearchPage = () => {
     router.push(`/search?kw=${keyword}&label=${category}`);
   };
   const handleNavigateManagePage = () => {
-    router.push('/teacher/courses');
+    router.push("/teacher/courses");
   };
-
-  const isTeacher = user?.role === 'teacher';
+  const handlenavigate = () => {
+    router.push("learning/1/livestream");
+  };
+  const isTeacher = user?.role === "teacher";
 
   return (
     <div>
       <nav className="z-10 flex w-full items-center justify-between border-b border-gray-200 py-4">
-        <Logo/>
+        <Logo />
         <Box className="w-[200px]">
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Course</InputLabel>
@@ -106,7 +107,6 @@ export default function NavBar() {
           >
             Search
           </Button>
-
           {isTeacher && (
             <Button
               variant="contained"
@@ -118,20 +118,28 @@ export default function NavBar() {
             </Button>
           )}
         </div>
-
-        
-            {isAuthenticated && (
-            <Button
-              variant="contained"
-              sx={{ textTransform: "none" }}
-              onClick={() => {
+        {isTeacher && (
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ textTransform: "none" }}
+            onClick={handlenavigate}
+          >
+            LIVE
+          </Button>
+        )}
+        {isAuthenticated && (
+          <Button
+            variant="contained"
+            sx={{ textTransform: "none" }}
+            onClick={() => {
               router.push("/chat");
-              }}
-              className=""
-            >
-              Chat
-            </Button>
-            )}
+            }}
+            className=""
+          >
+            Chat
+          </Button>
+        )}
 
         <div>
           {!isAuthenticated ? (

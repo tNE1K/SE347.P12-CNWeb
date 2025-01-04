@@ -11,7 +11,7 @@ import LessonInfo from "./LessonInfo";
 import { useAuth } from "@/app/component/authProvider";
 export default function page() {
   const params = useParams<{ courseId: string }>();
-  const { user } = useAuth();
+  const { user, setCourseSlt } = useAuth();
   const searchParams = useSearchParams();
   const [lessonSlt, setLessonSlt] = useState(0);
   const [showLessonList, setShowLessonList] = useState(true);
@@ -33,12 +33,25 @@ export default function page() {
   const lessons = course?.lessonIds;
 
   useEffect(() => {
-    if (course?.lessonIds && course?.lessonIds.length > 0 && lessonIdx) {
+    if (
+      course?.lessonIds &&
+      course?.lessonIds.length > 0 &&
+      Number(lessonIdx) < course.lessonIds.length
+    ) {
       if (course?.lessonIds[Number(lessonIdx)]) {
         setLessonSlt(Number(lessonIdx));
       }
     }
+    if (course) {
+      setCourseSlt(course);
+    }
   }, [course, lessonIdx]);
+  if (course?.lessonIds.length === 0)
+    return (
+      <div className="flex min-h-[90vh] items-center justify-center">
+        Currently no lesson on this course
+      </div>
+    );
   return (
     <div className="flex">
       <div className="flex-1">

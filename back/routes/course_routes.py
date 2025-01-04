@@ -10,8 +10,8 @@ import os
 import json 
 import math
 course_blueprint = Blueprint('course', __name__)
-print("http://127.0.0.1:3000")
-CORS(course_blueprint, origins=["http://127.0.0.1:3000"], supports_credentials=True)
+print("http://localhost:3000")
+CORS(course_blueprint, origins=["http://localhost:3000"], supports_credentials=True)
 # MongoDB client setup (replace with your connection details)
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client['backend']

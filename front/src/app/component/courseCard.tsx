@@ -62,9 +62,13 @@ export default function CourseCard({
           <Typography gutterBottom variant="h5" component="div">
             {course?.title || "Untitled Course"}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {course?.description || "No description available."}
-          </Typography>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: course?.description || "No description available.",
+            }}
+            color="text.secondary "
+            className="line-clamp-1 text-sm font-medium text-gray-600"
+          ></div>
         </CardContent>
       </CardActionArea>
       <CardActions

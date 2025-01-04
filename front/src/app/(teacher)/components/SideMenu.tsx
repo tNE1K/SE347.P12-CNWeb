@@ -6,7 +6,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import { Notifications } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import MessageIcon from "@mui/icons-material/Message";
 const drawerWidth = 240;
 const menuItems = [
@@ -25,16 +25,6 @@ const menuItems = [
     href: "/teacher/comments",
     icon: <MessageIcon />,
   },
-  {
-    label: "Notifications",
-    href: "/teacher/notis",
-    icon: <Notifications />,
-  },
-  {
-    label: "My Profile",
-    href: "/teacher/settings",
-    icon: <PersonIcon />,
-  },
 ];
 export default function SideBar() {
   const pathname = usePathname();
@@ -42,9 +32,13 @@ export default function SideBar() {
   const isActive = (href: string) => {
     return pathname.startsWith(href);
   };
+  const router = useRouter();
   return (
     <div className="fixed min-h-[200vh] w-[17%] border-r-[1px]">
-      <div className="flex select-none justify-center py-6 text-2xl font-bold text-black">
+      <div
+        onClick={() => router.push("/")}
+        className="flex cursor-pointer select-none justify-center py-6 text-2xl font-bold text-black"
+      >
         pro<span className="text-blue-600">c</span>ode
       </div>
       <div className="flex flex-col gap-1">

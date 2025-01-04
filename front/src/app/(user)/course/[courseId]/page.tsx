@@ -2,24 +2,27 @@
 import Rating from "@/app/(teacher)/components/RatingBar/Rating";
 import { getCourseById } from "@/app/api/course";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import CourseInfo from "./CourseInfo";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { MenuItem, Pagination, Select } from "@mui/material";
+import { Button, MenuItem, Pagination, Select } from "@mui/material";
 import { getCommentsByCourseId } from "@/app/api/comments";
 import CommentSection from "@/app/(teacher)/teacher/comments/CommentSection";
+import { useAuth } from "@/app/component/authProvider";
 const html = `<p>Bạn có biết:</p><p>Khóa học "Cẩm nang A-Z Illustrator cho Designer" chính là dành cho bạn, người...</p><p>Đam mê yêu thích đồ họa, nhiếp ảnh, thiết kế sản phẩm.</p><p>Đang đi làm cần bổ sung, chuẩn hóa kiến thức, tăng khả năng hoàn thiện và thăng tiến trong nghề nghiệp</p><p>Sinh viên chuyên ngành marketing, truyền thông, mỹ thuật, thiết đồ họa, thời trang, họa viên… cần kỹ năng sử dụng thành thạo phần mềm illustrator để&nbsp;phục vụ cho công việc và học thiết kế...</p><p>Đang làm việc trong lĩnh vực marketing, truyền thông, kinh doanh,…</p><p>Và bất cứ ai yêu thích công việc sáng tạo và thiết kế với phần mềm Adobe Illustrator!</p><p>Hãy tham gia ngay khóa học "Cẩm nang A-Z Illustrator cho Designer" tại Unica!</p><p>&nbsp;&nbsp;✔️ Khóa học do giảng viên Phạm Đức Huy trực tiếp hướng dẫn. Khóa học sẽ giúp bạn có được những kiến thức và kỹ năng nền tảng nhất để các bạn tiến gần hơn và trở thành một Graphic Designer, Web Designer, Game UI UX Designer hoặc Motion Graphic Designer ngay tại nhà!</p><p>&nbsp;&nbsp;✔️ Khóa học là nền tảng để các bạn hiểu sâu hơn về bản chất công cụ của phần mềm Adobe Illustrator, từ đó các bạn dễ dàng xin được việc tại các công ty thiết kế lớn ở Việt Nam.</p><p>&nbsp;&nbsp;✔️ Khóa học được soạn từ những dự án thực tế với nhiều khách hàng, vì vậy tính ứng dụng của khóa học luôn gắn liền với thị trường hiện tại. Học viên có thể ứng dụng ngay những kiến thức và kỹ năng mình học được vào trong công việc hiện tại của bản thân.</p><p>Nội dung khóa học cụ thể:</p><p>Phần 1: Giới thiệu và hướng dẫn tạo các hình khối</p><p>Phần 2: Các tính năng của Shapes và bài tập thực hành</p><p>Phần 3: Hướng dẫn các công cụ Drawing Tools, Pen Tool và Brushes</p><p>Phần 4: Hướng dẫn các công cụ nâng cao trong thiết kế đồ họa</p><p>Trở thành nhà thiết kế chuyên nghiệp với phần mềm Ai ngay hôm nay với khóa học "Cẩm nang A-Z Illustrator cho Designer" tại EduHub thôi nào!</p>`;
 export default function page() {
   const params = useParams<{ courseId: string }>();
   const [order, setOrder] = useState("-createdAt");
   const [page, setPage] = useState(1);
   const [showMore, setShowMore] = useState(false);
+  const { setCourseSlt } = useAuth();
   const { data } = useQuery({
     queryKey: ["course-detail", { courseId: params.courseId }],
     queryFn: () => getCourseById(params.courseId),
   });
+  const router = useRouter();
   const course = data?.data || undefined;
   const { data: commentsRes } = useQuery({
     queryKey: [
@@ -32,6 +35,14 @@ export default function page() {
     },
     enabled: !!course?._id,
   });
+  const handlenavigate = () => {
+    router.push("/learning/1/livestream");
+  };
+  useEffect(() => {
+    if (course) {
+      setCourseSlt(course);
+    }
+  }, [course]);
   const totalPages = commentsRes?.pagination?.total_pages || 0;
   const comments = commentsRes?.data || [];
   if (!course) return <></>;
@@ -63,9 +74,20 @@ export default function page() {
             <div className="flex items-center gap-4">
               <p className="text-text/md/regular text-white">Giảng viên:</p>
               <p className="text-text/md/semibold text-white underline">
-                {course?.teacher?.fullName}
+                {course?.teacher?.firstName + " " + course?.teacher.lastName}
               </p>
+              <Button
+                variant="contained"
+                color="error"
+                sx={{ textTransform: "none" }}
+                onClick={handlenavigate}
+              >
+                WATCH LIVE
+              </Button>
             </div>
+            <p className="text-text/md/regular text-white">
+              Email: {course.teacher.email}
+            </p>
           </div>
           <div className="basis-[40%]">
             <CourseInfo course={course} />
@@ -85,7 +107,7 @@ export default function page() {
               className={`${showMore ? "h-full" : "max-h-[400px]"} ${
                 showMore ? "animate-scrollDown" : "animate-scrollUp"
               } text-text/lg/regular mb-9 overflow-hidden p-[20px] pb-0`}
-              dangerouslySetInnerHTML={{ __html: html }}
+              dangerouslySetInnerHTML={{ __html: course?.description }}
             ></div>
             <div
               onClick={() => {

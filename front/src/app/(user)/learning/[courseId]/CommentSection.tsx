@@ -33,7 +33,7 @@ export default function CommentSection({ lessonId }: { lessonId: string }) {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("-createdAt");
   const [content, setContent] = useState("");
-  const { user } = useAuth();
+  const { user, courseSlt } = useAuth();
   const { data } = useQuery({
     queryKey: [
       "comments",
@@ -43,7 +43,7 @@ export default function CommentSection({ lessonId }: { lessonId: string }) {
   });
   const comments = data?.data || [];
   const totalPages = data?.pagination?.total_pages || 0;
-
+  const isTeacher = courseSlt?.teacher_id === user?.id;
   const queryClient = useQueryClient();
   const params = useParams<{ courseId: string }>();
   const { mutate } = useMutation({
@@ -62,50 +62,55 @@ export default function CommentSection({ lessonId }: { lessonId: string }) {
   });
   const handleAddComment = async () => {
     if (!user?.id) return;
-    mutate({
+    const payload: CreateCommentPayload = {
       user_id: user.id,
       content: content,
-      rating: rating,
       course_id: params.courseId,
+      rating: rating,
       lesson_id: lessonId,
-    });
+    };
+    mutate(payload);
     setRating(0);
     setContent("");
   };
   return (
     <div>
-      <div className="my-4 text-2xl font-bold">Comments</div>
-      <div className="flex gap-4">
-        <div
-          className="h-[50px] w-[50px] rounded-full bg-contain bg-center"
-          style={{
-            backgroundImage: `url(https://ps.w.org/user-avatar-reloaded/assets/icon-256x256.png?rev=2540745)`,
-          }}
-        ></div>
-        <div className="flex flex-1 flex-col gap-2">
-          <RatingPicker rating={rating} setRating={setRating} />
-          <TextField
-            id="outlined-basic"
-            label="Enter comment"
-            variant="outlined"
-            fullWidth
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            multiline={true}
-            rows={3}
-          />
-        </div>
-      </div>
-      <div className="mt-2 flex justify-end">
-        <Button
-          onClick={() => handleAddComment()}
-          variant="contained"
-          autoFocus
-          className=""
-        >
-          Comments
-        </Button>
-      </div>
+      {!isTeacher && (
+        <>
+          <div className="my-4 text-2xl font-bold">Comments</div>
+          <div className="flex gap-4">
+            <div
+              className="h-[50px] w-[50px] rounded-full bg-contain bg-center"
+              style={{
+                backgroundImage: `url(https://ps.w.org/user-avatar-reloaded/assets/icon-256x256.png?rev=2540745)`,
+              }}
+            ></div>
+            <div className="flex flex-1 flex-col gap-2">
+              <RatingPicker rating={rating} setRating={setRating} />
+              <TextField
+                id="outlined-basic"
+                label="Enter comment"
+                variant="outlined"
+                fullWidth
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                multiline={true}
+                rows={3}
+              />
+            </div>
+          </div>
+          <div className="mt-2 flex justify-end">
+            <Button
+              onClick={() => handleAddComment()}
+              variant="contained"
+              autoFocus
+              className=""
+            >
+              Comments
+            </Button>
+          </div>
+        </>
+      )}
       <div className="my-4 h-[0.5px] w-full bg-gray-400"></div>
       <div className="my-4 flex justify-end">
         <FormControl size="small">
@@ -153,7 +158,8 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
   const [content, setContent] = useState("");
   const queryClient = useQueryClient();
   const replies = comment?.replyIds || [];
-  const { user } = useAuth();
+  const { user, courseSlt } = useAuth();
+
   const { mutate } = useMutation({
     mutationFn: (payload: ReplyCommentPayload) => {
       return replyComment(payload);
@@ -182,6 +188,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
     setShowReplies(true);
     setContent("");
   };
+  const isTeacher = courseSlt?.teacher_id === comment.user_id;
   return (
     <div>
       <div className="flex gap-4">
@@ -194,7 +201,9 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
         <div className="w-full">
           <div className="w-full rounded-lg border-[1px] bg-white px-4 py-2">
             <div className="flex items-center gap-2">
-              <p className="font-bold">{comment.user_info.fullName}</p>
+              <p className={`${isTeacher && "text-blue-500"} font-bold`}>
+                {comment.user_info.firstName + " " + comment.user_info.lastName}
+              </p>
               <div className="mb-[2px]">
                 <Rating className="text-base" rating={comment.rating} />
               </div>
@@ -216,6 +225,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
           {showReplies && (
             <div className="mt-2 flex flex-col gap-2 transition-all">
               {replies.map((el, id) => {
+                const isTeacherReply = courseSlt?.teacher_id === el.user_id;
                 return (
                   <div key={id} className="flex gap-2">
                     <div
@@ -225,7 +235,12 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
                       }}
                     ></div>
                     <div className="w-full rounded-lg border-[1px] bg-white px-4 py-2">
-                      <p className="font-bold">{el.user_info.fullName}</p>
+                      <p
+                        className={`${isTeacherReply && "text-blue-500"} font-bold`}
+                      >
+                        {el.user_info.firstName + " " + el.user_info.lastName}{" "}
+                        {isTeacherReply && <>(Teacher)</>}
+                      </p>
                       <p>{el.content}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-gray-500">

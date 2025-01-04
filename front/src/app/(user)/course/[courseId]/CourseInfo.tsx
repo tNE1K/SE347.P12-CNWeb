@@ -1,5 +1,6 @@
 import { useAuth } from "@/app/component/authProvider";
 import { ICourse } from "@/app/types/course";
+import { IUser, User } from "@/app/types/user";
 import axios from "axios";
 
 function formatToVND(amount: number): string {
@@ -21,26 +22,29 @@ function calculateDiscountPercentage(
   return discountPercentage.toFixed(0);
 }
 export default function CourseInfo({ course }: { course: ICourse }) {
-  
   const { user, isAuthenticated, logout } = useAuth();
   // Hàm xử lý thanh toán khi người dùng nhấn "Mua ngay"
   const handlePayment = async () => {
     try {
       // Gửi yêu cầu thanh toán tới API backend
-      const response = await axios.post(`${process.env.MY_API_URL}/payment/create_payment`, {
-        order_type: "course", // Ví dụ về loại đơn hàng
-        amount: course.price,
-        order_desc: `Thanh toán khóa học: ${course.title}`,
-        course_id: course._id,
-        user_id: user?.id,
-        current_url: window.location.href,
-      });
+      const response = await axios.post(
+        `${process.env.MY_API_URL}/payment/create_payment`,
+        {
+          order_type: "course", // Ví dụ về loại đơn hàng
+          amount: course.price,
+          order_desc: `Thanh toán khóa học: ${course.title}`,
+          course_id: course._id,
+          user_id: user?.id,
+          current_url: window.location.href,
+        },
+        { withCredentials: true },
+      );
 
       if (response.status === 200) {
         const redirectUrl = response.data;
         console.log(redirectUrl);
         // Chuyển hướng đến trang xác nhận thanh toán hoặc trang kết quả
-        alert("Thanh toán thành công.");  // Điều hướng thành công tới trang xác nhận
+        alert("Thanh toán thành công."); // Điều hướng thành công tới trang xác nhận
         window.location.href = redirectUrl;
       } else {
         // Xử lý khi thanh toán thất bại
@@ -79,7 +83,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
           </p>
         </div>
         <div className="mt-6 flex justify-between gap-2">
-          <div
+          {/* <div
             style={{ boxShadow: "0px 0px 8px 0px rgba(0, 0, 0, 0.25)" }}
             className={
               "flex-1 cursor-pointer select-none rounded-[8px] bg-blue-500 px-[16px] py-[12px] text-center font-semibold text-white"
@@ -87,7 +91,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
             onClick={() => {}}
           >
             Thêm vào giỏ hàng
-          </div>
+          </div> */}
         </div>
 
         <div
