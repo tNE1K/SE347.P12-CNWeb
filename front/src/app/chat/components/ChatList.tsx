@@ -48,7 +48,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     const fetchChats = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/chat/list", {
+        const response = await fetch(`${process.env.MY_API_URL}/chat/list`, {
           method: "GET",
           credentials: "include",
         });
@@ -98,7 +98,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       if (!user?.id) return;
       console.log("Creating chat with:", newChatUsername);
       const response = await axios.post(
-        "http://localhost:5000/chat/create",
+        `${process.env.MY_API_URL}/chat/create`,
         {
           participants: newChatUsername,
           senderId: user.id,
@@ -243,7 +243,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                         ) {
                           try {
                             await axios.delete(
-                              `http://localhost:5000/chat/delete`,
+                              `${process.env.MY_API_URL}/chat/delete`,
                               {
                                 data: { chat_id: chat.id },
                                 withCredentials: true,

@@ -47,7 +47,7 @@ export default function ChatPage() {
 
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/auth/me`, {
+        const response = await fetch(`${process.env.MY_API_URL}/auth/me`, {
           method: "GET",
           credentials: "include",
         });
@@ -69,7 +69,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!selectedChat || !user?.id) return;
 
-    const socketConnection = io("http://localhost:5000", {
+    const socketConnection = io(`${process.env.MY_API_URL}`, {
       query: { user_id: user.id, chat_id: selectedChat.chatId },
       withCredentials: true,
       reconnection: true,
@@ -110,7 +110,7 @@ export default function ChatPage() {
     if (!user) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/chat/messages?chat_id=${chat_id}`,
+        `${process.env.MY_API_URL}/chat/messages?chat_id=${chat_id}`,
         {
           method: "GET",
           credentials: "include",

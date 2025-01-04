@@ -1,7 +1,7 @@
 import axios from "axios";
 import request from "./request";
 
-const API_URL = `http://localhost:5000/auth`;
+const API_URL = `${process.env.MY_API_URL}/auth`;
 
 export async function logIn(email: string, password: string): Promise<any> {
   try {

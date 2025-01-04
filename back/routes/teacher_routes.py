@@ -4,8 +4,9 @@ from utils.token_utils import token_required
 from models.user_model import User
 import os
 import uuid
+from config import Config
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 
 teacher_blueprint = Blueprint("teacher", __name__)
-CORS(teacher_blueprint, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(teacher_blueprint, origins=[Config.API_URL], supports_credentials=True)

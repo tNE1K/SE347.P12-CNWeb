@@ -3,7 +3,7 @@ import axios from "axios";
 export const verifyEmail = async (token: string) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/auth/verify-email?token=${token}`,
+      `${process.env.MY_API_URL}/auth/verify-email?token=${token}`,
       { withCredentials: true },
     );
     return response.data;

@@ -16,12 +16,12 @@ courses_collection = db['courses']
 users_collection = db['users']  
 payment_blueprint = Blueprint("payment", __name__)
 #CORS(payment_blueprint, origins="*", supports_credentials=True)
-CORS(payment_blueprint, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(payment_blueprint, origins=[Config.API_URL], supports_credentials=True)
 # Configurations (replace with your real VNPAY configurations)
 VNPAY_TMN_CODE = "DEXN209R" #for testing only
 VNPAY_PAYMENT_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
 VNPAY_HASH_SECRET_KEY = "PDBGSF700IA65NESBHT4K2B3EGDNYNM9" #for testing only
-VNPAY_RETURN_URL = "http://localhost:3000/payment/"
+VNPAY_RETURN_URL = f"{Config.API_URL}/payment/"
 
 
 def generate_payment_id(course_id, user_id):

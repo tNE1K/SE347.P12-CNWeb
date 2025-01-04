@@ -9,4 +9,5 @@ class Config:
     JWT_SECRET = os.getenv("JWT_SECRET")
     CONFIRM_SECRET = os.getenv("CONFIRM_SECRET")
     AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    API = os.getenv("API")
+    API_URL = os.getenv("API_URL")
+    API_HOSTNAME = os.getenv("API_HOSTNAME")

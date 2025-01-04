@@ -1,8 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
+from config import Config
 
 def send_verification_email(email, token):
-    verify_link = f"http://localhost:3000/verify?token={token}"
+    verify_link = f"{Config.API_URL}/verify?token={token}"
     subject = "Verify Your Email Address"
     body = f"Please click the following link to verify your email: {verify_link}"
     

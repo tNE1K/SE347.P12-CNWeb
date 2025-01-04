@@ -21,7 +21,7 @@ app.config.from_object(Config)
 
 
 
-CORS(app, supports_credentials=True, origins=["http://localhost:3000", "http://localhost:3000"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app, supports_credentials=True, origins=[Config.API_URL], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # Register blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
@@ -38,7 +38,7 @@ app.register_blueprint(chat_blueprint, url_prefix="/chat")
 app.register_blueprint(userlesson_blueprint, url_prefix="/progress")
 
 
-socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000", "http://localhost:3000"], 
+socketio = SocketIO(app, cors_allowed_origins=[Config.API_URL], 
                     ping_interval=25,  # Seconds between pings
                     ping_timeout=60,    # Timeout for ping response
                     reconnect=True,    # Enable auto reconnection
@@ -50,4 +50,4 @@ setup_socketio(socketio)
 
 if __name__ == "__main__":
     # app.run(debug=True)
-    socketio.run(app, host=Config.API, port=5000, debug=True)
+    socketio.run(app, host=Config.API_HOSTNAME, port=5000, debug=True)

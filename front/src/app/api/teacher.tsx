@@ -6,7 +6,7 @@ export async function sendVerifyDocument(
 ) {
   try {
     const response = await axios.post(
-      `http://localhost:5000/user/upload-verify-documents/`,
+      `${process.env.MY_API_URL}/user/upload-verify-documents/`,
       formData,
       {
         headers: {
