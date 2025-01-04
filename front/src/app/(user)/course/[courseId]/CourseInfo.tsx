@@ -50,7 +50,7 @@ export default function CourseInfo({ course }: { course: ICourse }) {
         const redirectUrl = response.data;
         console.log(redirectUrl);
         // Chuyển hướng đến trang xác nhận thanh toán hoặc trang kết quả
-        alert("Thanh toán thành công."); // Điều hướng thành công tới trang xác nhận
+        alert("Redirect to Payment page."); // Điều hướng thành công tới trang xác nhận
         window.location.href = redirectUrl;
       } else {
         // Xử lý khi thanh toán thất bại
