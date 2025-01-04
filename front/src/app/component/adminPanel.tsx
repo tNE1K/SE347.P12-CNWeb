@@ -68,14 +68,10 @@ export default function AdminTabs() {
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Course management" {...a11yProps(0)} />
-        <Tab label="User management" {...a11yProps(1)} />
-        <Tab label="Statistic" {...a11yProps(2)} />
-        <Tab label="Teacher request" {...a11yProps(3)} />
+        <Tab label="User management" {...a11yProps(0)} />
+        <Tab label="Statistic" {...a11yProps(1)} />
+        <Tab label="Teacher request" {...a11yProps(2)} />
       </Tabs>
-      <TabPanel value={value} index={0}>
-        Item One
-      </TabPanel>
       <TabPanel value={value} index={1}>
         <Button variant="text" onClick={handleRefresh}>
           Refresh
