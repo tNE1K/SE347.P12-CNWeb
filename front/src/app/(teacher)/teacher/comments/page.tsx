@@ -1,7 +1,8 @@
+"use client"
 import { RoleCheck } from "@/app/component/roleCheck";
 import CommentPage from "./CommentPage";
 
-export function page() {
+export function CommentPages() {
   return (
     <div className="min-h-[120vh] p-6">
       <CommentPage />
@@ -9,4 +10,4 @@ export function page() {
   );
 }
 
-export default RoleCheck(page, "teacher")
+export default RoleCheck(CommentPages, "teacher")

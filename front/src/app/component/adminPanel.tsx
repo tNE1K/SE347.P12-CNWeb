@@ -7,8 +7,8 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import { useState } from "react";
+import StatisticTable from "./admin_statisticTable";
 import TeacherRequestTable from "./admin_teacherRequestTable";
-
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -68,14 +68,10 @@ export default function AdminTabs() {
         aria-label="Vertical tabs example"
         sx={{ borderRight: 1, borderColor: "divider" }}
       >
-        <Tab label="Course management" {...a11yProps(0)} />
-        <Tab label="User management" {...a11yProps(1)} />
-        <Tab label="Statistic" {...a11yProps(2)} />
-        <Tab label="Teacher request" {...a11yProps(3)} />
+        <Tab label="User management" {...a11yProps(0)} />
+        <Tab label="Statistic" {...a11yProps(1)} />
+        <Tab label="Teacher request" {...a11yProps(2)} />
       </Tabs>
-      <TabPanel value={value} index={0}>
-        Item One
-      </TabPanel>
       <TabPanel value={value} index={1}>
         <Button variant="text" onClick={handleRefresh}>
           Refresh
@@ -83,7 +79,7 @@ export default function AdminTabs() {
         <UserDataTable key={tableKey} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <StatisticTable/>
       </TabPanel>
       <TabPanel value={value} index={3}>
         <TeacherRequestTable/>
