@@ -157,7 +157,7 @@ export default function Home() {
       </div> */}
 
       {/* Danh sách khóa học phổ biến */}
-      <div className="p-3">
+      <div className="p-[30px]">
         <h2 className="mb-4 text-2xl font-bold">Best Seller</h2>
         <Swiper
           modules={[Navigation, Pagination]}
@@ -182,7 +182,7 @@ export default function Home() {
       </div>
 
       {/* Danh sách khóa học */}
-      <div className="p-3">
+      <div className="p-[30px]">
         <h2 className="mb-4 text-2xl font-bold">All courses</h2>
         <Swiper
           modules={[Navigation, Pagination]}

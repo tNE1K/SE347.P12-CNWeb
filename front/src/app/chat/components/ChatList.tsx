@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import 'react-notifications-component/dist/theme.css'
+import "react-notifications-component/dist/theme.css";
 import axios from "axios";
 import { useAuth } from "@/app/component/authProvider";
 import { formatDistanceToNow } from "date-fns";
@@ -38,7 +38,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [newChatUsername, setNewChatUsername] = useState("");
   const { user } = useAuth();
   const [showNotification, setShowNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
+  const [notificationMessage, setNotificationMessage] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!user?.id) return;
@@ -46,7 +48,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     const fetchChats = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://127.0.0.1:5000/chat/list", {
+        const response = await fetch("http://localhost:5000/chat/list", {
           method: "GET",
           credentials: "include",
         });
@@ -59,7 +61,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         } else {
           throw new Error("Failed to fetch chats");
         }
-
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to fetch chats",
@@ -70,7 +71,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     };
 
     fetchChats();
-  }, [user,reloadTrigger]);
+  }, [user, reloadTrigger]);
 
   useEffect(() => {
     if (error) {
@@ -96,7 +97,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     try {
       if (!user?.id) return;
       console.log("Creating chat with:", newChatUsername);
-      const response = await axios.post("http://127.0.0.1:5000/chat/create", {
+      const response = await axios.post(
+        "http://localhost:5000/chat/create",
+        {
           participants: newChatUsername,
           senderId: user.id,
           content: "",
@@ -106,13 +109,13 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         },
         {
           withCredentials: true,
-        }
+        },
       );
       const result = response.data;
       console.log("Create chat result:", result);
       if (result.status === "success") {
         setReloadTrigger((prev) => !prev);
-        setNewChatUsername(""); 
+        setNewChatUsername("");
         setNotificationMessage("Chat created successfully with a new person!");
         setShowNotification(true);
         const timer = setTimeout(() => {
@@ -129,18 +132,17 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     }
   };
 
-
   if (error && showNotification) {
     return (
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg">
+      <div className="fixed left-1/2 top-4 -translate-x-1/2 transform rounded bg-red-500 px-4 py-2 text-white shadow-lg">
         User not found or Chat has been created
       </div>
     );
   }
-  
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full ml-60">
+      <div className="ml-60 flex h-full items-center justify-center">
         <CircularProgress size={60} thickness={5} />
       </div>
     );
@@ -149,7 +151,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   return (
     <div className="w-1/5 border-r border-gray-300">
       {showNotification && (
-        <div className="fixed top-0 left-0 right-0 p-4 bg-green-500 text-white text-center">
+        <div className="fixed left-0 right-0 top-0 bg-green-500 p-4 text-center text-white">
           {notificationMessage}
         </div>
       )}
@@ -173,11 +175,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               />
             </div>
             <div className="mt-4">
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleCreateChat}
-              >
+              <Button variant="contained" fullWidth onClick={handleCreateChat}>
                 Start conversation
               </Button>
             </div>
@@ -185,66 +183,78 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         ) : (
           <ul className="divide-y divide-gray-200">
             <div className="p-4 text-center text-gray-500">
-            <div className="mt-2">
-              <TextField
-                id="standard-basic"
-                label="Enter username to create new chat"
-                variant="standard"
-                fullWidth
-                value={newChatUsername}
-                onChange={(e) => setNewChatUsername(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleCreateChat();
-                  }
-                }}
-              />
+              <div className="mt-2">
+                <TextField
+                  id="standard-basic"
+                  label="Enter username to create new chat"
+                  variant="standard"
+                  fullWidth
+                  value={newChatUsername}
+                  onChange={(e) => setNewChatUsername(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleCreateChat();
+                    }
+                  }}
+                />
+              </div>
+              <div className="mt-4">
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleCreateChat}
+                >
+                  Start conversation
+                </Button>
+              </div>
             </div>
-            <div className="mt-4">
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleCreateChat}
-              >
-                Start conversation
-              </Button>
-            </div>
-          </div>
             {chats.map((chat) => (
               <li
-                key={ chat.id}
-                onClick={() =>
-                  handleSelectChat(chat.id, chat.receiverName)
-                }
+                key={chat.id}
+                onClick={() => handleSelectChat(chat.id, chat.receiverName)}
                 className="cursor-pointer transition-colors hover:bg-gray-50"
               >
                 <div className="space-y-2 p-4">
-                    <div className="flex items-start justify-between">
-                    <div className="flex-1 font-medium truncate">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 truncate font-medium">
                       {chat.isGroupChat ? "Group Chat" : chat.receiverName}
                     </div>
                     {chat.lastMessage?.timestamp && (
-                      <span className="mt-2 ml-2 text-xs text-gray-500 whitespace-nowrap">
-                      {formatDistanceToNow(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
+                      <span className="ml-2 mt-2 whitespace-nowrap text-xs text-gray-500">
+                        {formatDistanceToNow(
+                          new Date(chat.lastMessage.timestamp),
+                          { addSuffix: true },
+                        )}
                       </span>
                     )}
                     <IconButton
                       aria-label="delete"
                       size="small"
-                      className="ml-2 mt-"
-                      onMouseEnter={(e) => (e.currentTarget.style.color = 'red')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                      className="mt- ml-2"
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.color = "red")
+                      }
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "")}
                       onClick={async () => {
-                        if (window.confirm("Are you sure you want to delete this chat?")) {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete this chat?",
+                          )
+                        ) {
                           try {
-                            await axios.delete(`http://127.0.0.1:5000/chat/delete`, {
-                              data: { chat_id: chat.id },
-                              withCredentials: true,
-                            });
-                            window.location.reload(); 
+                            await axios.delete(
+                              `http://localhost:5000/chat/delete`,
+                              {
+                                data: { chat_id: chat.id },
+                                withCredentials: true,
+                              },
+                            );
+                            window.location.reload();
                           } catch (error) {
                             setError(
-                              error instanceof Error ? error.message : "Failed to delete chat",
+                              error instanceof Error
+                                ? error.message
+                                : "Failed to delete chat",
                             );
                           }
                         }
@@ -252,7 +262,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
-                    </div>
+                  </div>
                   {chat.lastMessage && (
                     <div className="flex items-center justify-between">
                       <p className="truncate text-sm text-gray-600">
@@ -267,7 +277,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         )}
       </div>
     </div>
-
   );
 };
 export default ChatList;
