@@ -13,6 +13,7 @@ import hashlib
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["backend"]
 courses_collection = db['courses']  
+users_collection = db['users']  
 payment_blueprint = Blueprint("payment", __name__)
 #CORS(payment_blueprint, origins="*", supports_credentials=True)
 CORS(payment_blueprint, origins=["http://localhost:3000"], supports_credentials=True)
@@ -20,7 +21,7 @@ CORS(payment_blueprint, origins=["http://localhost:3000"], supports_credentials=
 VNPAY_TMN_CODE = "DEXN209R" #for testing only
 VNPAY_PAYMENT_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
 VNPAY_HASH_SECRET_KEY = "PDBGSF700IA65NESBHT4K2B3EGDNYNM9" #for testing only
-VNPAY_RETURN_URL = "https://811c-115-74-192-50.ngrok-free.app/payment/test"
+VNPAY_RETURN_URL = "http://127.0.0.1:3000/payment/"
 
 
 def generate_payment_id(course_id, user_id):
@@ -74,7 +75,7 @@ def payment():
         # Validate required fields
         if not all([user_id, course_id, order_type, amount, order_desc, current_url]):
             return jsonify({"error": "Missing required fields"}), 400
-        VNPAY_RETURN_URL = f"{VNPAY_RETURN_URL}?user_id={user_id}&course_id={course_id}"
+        VNPAY_RETURN_URL_NEW = f"{VNPAY_RETURN_URL}?user_id={user_id}&course_id={course_id}"
         #print(request.json)
         # Build VNPAY request
         vnp = VNPAY()
@@ -89,9 +90,7 @@ def payment():
         vnp.request_data['vnp_Locale'] = "vn"
         vnp.request_data['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')
         vnp.request_data['vnp_IpAddr'] = ipaddr
-        vnp.request_data['vnp_ReturnUrl'] = VNPAY_RETURN_URL
-        print("Day la Return URL: " + VNPAY_RETURN_URL)
-
+        vnp.request_data['vnp_ReturnUrl'] = VNPAY_RETURN_URL_NEW
         #vnp.request_data['vnp_BankCode'] = "VNPAYQR"
 
         # Generate payment URL
@@ -104,9 +103,12 @@ def payment():
     
 @payment_blueprint.route('/test', methods=['GET'])
 def test_payment():
-    vnp_response = request.args.to_dict()
-    vnp_secure_hash = vnp_response.pop('vnp_SecureHash', None)  # Lấy chữ ký
 
+    vnp_response = request.args.to_dict()
+    userId = vnp_response.pop('user_id', "")
+    courseId = vnp_response.pop('course_id', "")
+    vnp_secure_hash = vnp_response.pop('vnp_SecureHash', None)  # Lấy chữ ký
+    print(vnp_response)
     # Sắp xếp các tham số còn lại theo thứ tự alphabet
     sorted_params = sorted(vnp_response.items())
     query_string = urllib.parse.urlencode(sorted_params)
@@ -118,25 +120,33 @@ def test_payment():
         hashlib.sha512
     )
     calculated_hash = hmac_obj.hexdigest()
-    
+
     # So sánh chữ ký đã tính toán với chữ ký từ VNPAY
     if calculated_hash == vnp_secure_hash:
+        print("success")
         # Nếu chữ ký hợp lệ, kiểm tra mã phản hồi
         response_code = vnp_response.get("vnp_ResponseCode")
+        print(1)
         if response_code == "00":
             # Lấy user_id và course_id từ tham số URL
-            user_id = vnp_response.get("user_id")
-            course_id = vnp_response.get("course_id")
+            print(2)
+            user_id = userId
+            course_id = courseId
             if user_id:
+                print(3)
                 if course_id:
+                    
                     result = courses_collection.update_one(
                         {"_id": ObjectId(course_id)},
                         {"$addToSet": {"participantsId": user_id}}  # Sử dụng $addToSet để tránh trùng lặp
                     )
-
+                    rs = users_collection.update_one(
+                        {"_id": ObjectId(user_id)},
+                        {"$addToSet": {"participatedCourses": course_id}}
+                    )
                     if result.matched_count == 0:
                         return jsonify({"message": "Course not found."}), 404
-
+                    print(4)
                     return jsonify({
                         "status": "success",
                         "message": "Người dùng đã thanh toán khóa học thành công."
