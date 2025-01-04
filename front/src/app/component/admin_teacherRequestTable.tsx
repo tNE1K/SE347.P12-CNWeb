@@ -5,6 +5,21 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function TeacherRequestTable() {
+  const fetchTeacherRequests = async () => {
+      setLoading(true);
+      try {
+        const response = await fetchAllTeacherRequest();
+        setRows(response.data);
+      } catch (error) {
+        console.error("Error fetching teacher requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    useEffect(() => {
+      fetchTeacherRequests();
+    }, []);
+
   const handleAccept = async (id: string) => {
     console.log("Test:", id);
     try {
@@ -14,13 +29,14 @@ export default function TeacherRequestTable() {
         { withCredentials: true },
       );
       console.log("Accepted:", response.data);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      fetchTeacherRequests();
     } catch (error) {
       console.error("Error accepting request:", error);
     }
   };
 
   const handleDecline = async (id: string) => {
-    console.log("Test:", id);
     try {
       const response = await axios.post(
         `${process.env.MY_API_URL}/admin/decline_teacher`,
@@ -28,10 +44,14 @@ export default function TeacherRequestTable() {
         { withCredentials: true },
       );
       console.log("Declined:", response.data);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      fetchTeacherRequests();
     } catch (error) {
       console.error("Error accepting request:", error);
     }
   };
+
+  
 
   const columns: GridColDef[] = [
     { field: "index", headerName: "Index", width: 100 },
