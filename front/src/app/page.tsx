@@ -22,7 +22,6 @@ export default function Home() {
       try {
         const response = await getAllCourse(1, 10, "rating");
         setCourses(response.data);
-        console.log("Bug" + response.data);
         const sortedCourses = response.data.sort((a, b) => b.rating - a.rating);
         setBannerCourses(sortedCourses.slice(0, 3));
         setPopularCourses(sortedCourses.slice(0, 5));

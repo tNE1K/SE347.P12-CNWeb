@@ -6,6 +6,11 @@ import MessageInput from "./components/MessageInput";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/component/authProvider";
 import Navbar from "./components/Navbar";
+import Button from "@mui/material/Button";
+import { Avatar } from "@mui/material";
+import PageviewIcon from '@mui/icons-material/Pageview';
+import { blue } from '@mui/material/colors';
+
 
 interface Message {
   _id: string;
@@ -16,18 +21,10 @@ interface Message {
   socket: Socket;
 }
 
-interface UserDetail {
-  id: string;
-  name: string;
-  fullname: string;
-}
-
 export default function ChatPage() {
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<{ chatId: string; receiverName: string } | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [userDetail, setUserDetail] = useState<UserDetail>();
-  const messagesEndRef = useRef(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -48,37 +45,38 @@ export default function ChatPage() {
 
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch(`${process.env.MY_API_URL}/auth/me`, {
+        const response = await fetch(`http://127.0.0.1:5000/auth/me`, {
           method: "GET",
           credentials: "include",
         });
+
         if (!response.ok) {
           throw new Error("Failed to fetch user details");
         }
 
         const result = await response.json();
-        setUserDetail(result);
+        // No need to set userDetail anymore
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
     };
 
-    fetchUserDetail();
+    fetchUserDetail(); 
   }, [user]);
 
   useEffect(() => {
     if (!selectedChat || !user?.id) return;
-
-    const socketConnection = io(`${process.env.MY_API_URL}`, {
-      query: { user_id: user.id, chat_id: selectedChat },
+    
+    const socketConnection = io("http://127.0.0.1:5000", {
+      query: { user_id: user.id, chat_id: selectedChat.chatId },
       withCredentials: true,
-      reconnection: true,
+      reconnection: true, 
     });
 
     setSocket(socketConnection);
 
     socketConnection.on("connect", () => {
-      console.log(`Connected to chat ${selectedChat}`);
+      console.log(`Connected to chat ${selectedChat.chatId}`);
     });
 
     socketConnection.on("receive_message", (message: Message) => {
@@ -100,22 +98,16 @@ export default function ChatPage() {
       content: content,
       timestamp: new Date().toISOString(),
     };
-    setMessages((prev) => [
-      ...prev,
-      { ...newMessage, _id: Date.now().toString(), socket },
-    ]);
+    setMessages((prev) => [...prev, { ...newMessage, _id: Date.now().toString(), socket }]);
   };
 
   const fetchMessages = async (chat_id: string) => {
     if (!user) return;
     try {
-      const response = await fetch(
-        `${process.env.MY_API_URL}/chat/messages?chat_id=${chat_id}`,
-        {
-          method: "GET",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`http://127.0.0.1:5000/chat/messages?chat_id=${chat_id}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch messages");
@@ -124,10 +116,8 @@ export default function ChatPage() {
       const result = await response.json();
       if (result.status === "success" && result.data.messages) {
         setMessages(result.data.messages);
-        console.log("Messages fetched successfully", result.data.messages);
       }
 
-      console.log("Messages fetched successfully", result);
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -135,32 +125,46 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (selectedChat) {
-      fetchMessages(selectedChat);
+      fetchMessages(selectedChat.chatId);
     }
   }, [selectedChat]);
+
   return (
-    <div className="flex h-screen flex-col">
-      <Navbar userDetail={userDetail} />
+    <div className="flex flex-col h-screen">  
+      <nav className="z-10 flex w-fu  l4 items-center justify-between border-b border-500 py-4 px-8">
+        <div className="text-2xl text-blue-700 font-bold">Messages</div>
+        <div className="text-lg flex items-center space-x-4">
+            <span className="text-xl font-semibold">{selectedChat?.receiverName}</span>
+            {/* <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Settings</button> */}
+            <Avatar sx={{ bgcolor: blue[700] }}>
+              <PageviewIcon />
+            </Avatar>
+        </div>
+      </nav>
       <div className="flex flex-1">
-        <ChatList onSelectChat={setSelectedChat} />
-        <div className="flex flex-1 flex-col">
+        <ChatList onSelectChat={(chatId, receiverName) => {
+          setSelectedChat({ chatId, receiverName });
+        }} />
+        <div className="flex-1 flex flex-col">
           {selectedChat ? (
-            <>
-              <ChatWindow messages={messages} />
-              {user?.id && (
-                <MessageInput
-                  onSendMessage={sendMessage}
-                  sender={user.id}
-                  recipient={selectedChat}
-                  chatId={selectedChat}
-                  socket={socket}
-                />
-              )}
-            </>
+          <>
+            <ChatWindow messages={messages} />
+            {user?.id && (
+            <MessageInput
+              onSendMessage={(content, recipient) => {
+              sendMessage(content, recipient);
+              }}
+              sender={user.id}
+              recipient={selectedChat.chatId}
+              chatId={selectedChat.chatId}
+              socket={socket}
+            />
+            )}
+          </>
           ) : (
-            <div className="flex h-full items-center justify-center">
-              Select a chat to start messaging
-            </div>
+          <div className="flex h-full justify-center items-center">
+            Select a chat to start messaging
+          </div>
           )}
         </div>
       </div>

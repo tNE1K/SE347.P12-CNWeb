@@ -44,15 +44,27 @@ class Chat:
         return db.chats.find(query)
     
     @staticmethod
-    def create_chat(participants, is_group=False):
+    def create_chat(participants,user_id, is_group=False):
         chat_data = {
-            "participants": participants,
+            "participants": [participants, user_id],
             "lastMessage": {
-                "senderId": None,
-                "content": None,
-                "timestamp": None
+            "senderId": user_id,
+            "content": None,
+            "timestamp": None
             },
             "isGroupChat": is_group
         }
         result = db.chats.insert_one(chat_data)
         return result.inserted_id
+
+    @staticmethod
+    def check_participants_exist(participants):
+        if len(participants) < 2:
+            return False
+        chat_exists = db.chats.find_one({"participants": {"$all": participants}}) is not None
+        return chat_exists
+    
+    @staticmethod
+    def delete_chat(chat_id):
+        db.chats.delete_one({"_id": ObjectId(chat_id)})
+        # db.messages.delete_many({"chatId": ObjectId(chat_id)})
