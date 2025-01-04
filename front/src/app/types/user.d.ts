@@ -12,10 +12,13 @@ export interface User {
 export interface IUser {
   _id: string;
   avatar: string;
+  birthday: string;
   email: string;
-  fullName: string;
+  firstName: string;
   isVerify: boolean;
+  lastName: string;
   participatedCourses: string[];
-  password: string;
   role: "teacher" | "user" | "admin";
+  teacherVerifyRequest: boolean;
+  verifyImage: string[];
 }

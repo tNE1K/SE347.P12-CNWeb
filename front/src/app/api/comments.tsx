@@ -6,7 +6,7 @@ export interface CreateCommentPayload {
   course_id?: string;
   user_id: string;
   content: string;
-  rating: number;
+  rating?: number;
 }
 export interface ReplyCommentPayload {
   comment_id: string;

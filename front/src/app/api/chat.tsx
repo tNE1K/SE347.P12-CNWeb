@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `http://127.0.0.1:5000/chat`;
+const API_URL = `http://localhost:5000/chat`;
 
 export const fetchInfo = async () => {
   try {
@@ -13,5 +13,3 @@ export const fetchInfo = async () => {
     throw error;
   }
 };
-
-

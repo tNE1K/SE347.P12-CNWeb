@@ -10,25 +10,25 @@ export const RoleCheck = (
   return function RoleGuardedComponent(props: any) {
     const router = useRouter();
 
-    // useEffect(() => {
-    //   const checkRole = async () => {
-    //     try {
-    //       const response = await fetchUserInfo();
-    //       console.log(response)
-    //       if (response) {
-    //         const { role } = response;
-    //         if (role !== allowedRole) {
-    //           router.replace("/");
-    //         }
-    //       } else {
-    //         router.replace("/");
-    //       }
-    //     } catch (error) {
-    //       router.replace("/");
-    //     }
-    //   };
-    //   void checkRole();
-    // }, [router]);
+    useEffect(() => {
+      const checkRole = async () => {
+        try {
+          const response = await fetchUserInfo();
+          console.log(response);
+          if (response) {
+            const { role } = response;
+            if (role !== allowedRole) {
+              router.replace("/");
+            }
+          } else {
+            router.replace("/");
+          }
+        } catch (error) {
+          router.replace("/");
+        }
+      };
+      void checkRole();
+    }, [router]);
 
     return <Component {...props} />;
   };

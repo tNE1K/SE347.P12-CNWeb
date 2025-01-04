@@ -44,7 +44,8 @@ class Comment:
                         "isReply": 1,
                         "replyIds": 1,
                         "createdAt": 1,
-                        "user_info.fullName": 1,  
+                        "user_info.firstName": 1,
+                        "user_info.lastName": 1,  
                         "user_info.email": 1,  
                         "user_info.avatar" : 1
                     }

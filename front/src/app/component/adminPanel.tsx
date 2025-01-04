@@ -30,9 +30,7 @@ function TabPanel(props: TabPanelProps) {
       {value === index && (
         <Box sx={{ p: 3 }}>
           <Container>
-            <Box>
-              {children}
-            </Box>
+            <Box>{children}</Box>
           </Container>
         </Box>
       )}
@@ -43,7 +41,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: number) {
   return {
     id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`
+    "aria-controls": `vertical-tabpanel-${index}`,
   };
 }
 
@@ -72,17 +70,17 @@ export default function AdminTabs() {
         <Tab label="Statistic" {...a11yProps(1)} />
         <Tab label="Teacher request" {...a11yProps(2)} />
       </Tabs>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={value} index={0}>
         <Button variant="text" onClick={handleRefresh}>
           Refresh
         </Button>
         <UserDataTable key={tableKey} />
       </TabPanel>
-      <TabPanel value={value} index={2}>
-        <StatisticTable/>
+      <TabPanel value={value} index={1}>
+        <StatisticTable />
       </TabPanel>
-      <TabPanel value={value} index={3}>
-        <TeacherRequestTable/>
+      <TabPanel value={value} index={2}>
+        <TeacherRequestTable />
       </TabPanel>
     </Box>
   );

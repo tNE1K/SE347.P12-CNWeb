@@ -80,11 +80,14 @@ export default function SearchBox({
                 >
                   <div
                     style={{ backgroundImage: `url(${el.cover})` }}
-                    className="h-[70px] w-[70px] rounded-md border-[1px] bg-cover bg-center bg-no-repeat"
+                    className="h-[70px] min-w-[70px] rounded-md border-[1px] bg-cover bg-center bg-no-repeat"
                   ></div>
                   <div>
                     <p className="font-bold">{el.title}</p>
-                    <p className="text-sm text-gray-600">{el.description}</p>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: el.description }}
+                      className="mb-1 line-clamp-1 text-sm font-semibold text-gray-500"
+                    ></div>
                     <div className="flex items-center gap-2">
                       <Rating rating={el.rating} className="text-sm" />
                       <p className="text-sm text-gray-600">{el.rating}/5</p>

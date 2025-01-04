@@ -46,14 +46,15 @@ export default function page() {
     <div className="flex flex-col gap-6 px-8 py-8">
       <div className="flex gap-8">
         <div
-          className="h-[200px] w-[300px] rounded-lg border-[1px] bg-contain bg-center bg-no-repeat"
+          className="h-[200px] min-w-[300px] rounded-lg border-[1px] bg-contain bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${course.cover})` }}
         ></div>
         <div className="flex flex-col gap-2">
           <p className="text-2xl font-semibold">{course.title}</p>
-          <p className="mb-1 text-sm font-semibold text-gray-500">
-            {course.description}
-          </p>
+          <div
+            dangerouslySetInnerHTML={{ __html: course.description }}
+            className="mb-1 line-clamp-2 text-sm font-semibold text-gray-500"
+          ></div>
           <div className="flex items-center gap-2">
             <Rating
               rating={course.rating}

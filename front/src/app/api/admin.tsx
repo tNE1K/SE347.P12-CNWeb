@@ -2,9 +2,12 @@ import axios from "axios";
 
 export const fetchAllUser = async () => {
   try {
-    const response = await axios.get(`http://127.0.0.1:5000/admin/get_all_user`, {
-      withCredentials: true
-    });
+    const response = await axios.get(
+      `http://localhost:5000/admin/get_all_user`,
+      {
+        withCredentials: true,
+      },
+    );
     return response.data;
   } catch (error) {
     console.error("Failed to fetch user data:", error);
@@ -15,9 +18,12 @@ export const fetchAllUser = async () => {
 
 export const fetchAllTeacherRequest = async () => {
   try {
-    const response = await axios.get(`http://127.0.0.1:5000/admin/get_teacher_request`, {
-      withCredentials: true
-    });
+    const response = await axios.get(
+      `http://localhost:5000/admin/get_teacher_request`,
+      {
+        withCredentials: true,
+      },
+    );
     return response.data;
   } catch (error) {
     console.error("Failed to fetch teacher request data:", error);
@@ -28,11 +34,11 @@ export const fetchAllTeacherRequest = async () => {
 
 export const findUser = async (token: any, str: string) => {
   try {
-    const response = await axios.get(`http://127.0.0.1:5000/admin/find_user`, {
+    const response = await axios.get(`http://localhost:5000/admin/find_user`, {
       withCredentials: true,
       params: {
-        search: str
-      }
+        search: str,
+      },
     });
     return response.data;
   } catch (error) {
@@ -44,9 +50,12 @@ export const findUser = async (token: any, str: string) => {
 
 export const fetchAllCourse = async (token: any) => {
   try {
-    const response = await axios.get(`http://127.0.0.1:5000/admin/get_all_course`, {
-      withCredentials: true
-    });
+    const response = await axios.get(
+      `http://localhost:5000/admin/get_all_course`,
+      {
+        withCredentials: true,
+      },
+    );
     console.log("Course Data:", response.data);
     return response.data;
   } catch (error) {
