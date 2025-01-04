@@ -24,7 +24,13 @@ function calculateDiscountPercentage(
 export default function CourseInfo({ course }: { course: ICourse }) {
   const { user, isAuthenticated, logout } = useAuth();
   // Hàm xử lý thanh toán khi người dùng nhấn "Mua ngay"
+  
   const handlePayment = async () => {
+    if (!user?.id) {
+      alert("Vui lòng đăng nhập để thực hiện thanh toán!");
+      window.location.href = "/login"; // Điều hướng đến trang đăng nhập
+      return;
+    }
     try {
       // Gửi yêu cầu thanh toán tới API backend
       const response = await axios.post(
