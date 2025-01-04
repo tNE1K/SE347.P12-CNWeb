@@ -1,3 +1,4 @@
+"use client";
 import { RoleCheck } from "@/app/component/roleCheck";
 import CommentPage from "./CommentPage";
 
@@ -9,4 +10,4 @@ export function page() {
   );
 }
 
-export default RoleCheck(page, "teacher")
+export default RoleCheck(page, "teacher");

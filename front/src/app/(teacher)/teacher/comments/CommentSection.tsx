@@ -1,21 +1,12 @@
 "use client";
 import Rating from "@/app/(teacher)/components/RatingBar/Rating";
-import RatingPicker from "@/app/(teacher)/components/RatingBar/RatingPicker";
 import { IComment } from "@/app/types/comment";
 import { convertISOToDate } from "@/app/utils/coverter";
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Pagination,
-  Select,
-  TextField,
-} from "@mui/material";
+
 import React, { useState } from "react";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { replyComment, ReplyCommentPayload } from "@/app/api/comments";
 import { useAuth } from "@/app/component/authProvider";
@@ -41,7 +32,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
   const [content, setContent] = useState("");
   const queryClient = useQueryClient();
   const replies = comment?.replyIds || [];
-  const { user } = useAuth();
+  const { user, courseSlt } = useAuth();
   const { mutate } = useMutation({
     mutationFn: (payload: ReplyCommentPayload) => {
       return replyComment(payload);
@@ -70,6 +61,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
     setShowReplies(true);
     setContent("");
   };
+  const isTeacher = courseSlt?.teacher_id === comment.user_id;
   return (
     <div>
       <div className="flex gap-4">
@@ -82,7 +74,9 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
         <div className="w-full">
           <div className="w-full rounded-lg border-[1px] bg-white px-4 py-2">
             <div className="flex items-center gap-2">
-              <p className="font-bold">{comment.user_info.fullName}</p>
+              <p className={`${isTeacher && "text-blue-500"} font-bold`}>
+                {comment.user_info.fullName}
+              </p>
               <div className="mb-[2px]">
                 <Rating className="text-base" rating={comment.rating} />
               </div>
@@ -104,6 +98,7 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
           {showReplies && (
             <div className="mt-2 flex flex-col gap-2 transition-all">
               {replies.map((el, id) => {
+                const isTeacherReply = courseSlt?.teacher_id === el.user_id;
                 return (
                   <div key={id} className="flex gap-2">
                     <div
@@ -113,7 +108,12 @@ export const CommentRow = ({ comment }: { comment: IComment }) => {
                       }}
                     ></div>
                     <div className="w-full rounded-lg border-[1px] bg-white px-4 py-2">
-                      <p className="font-bold">{el.user_info.fullName}</p>
+                      <p
+                        className={`${isTeacherReply && "text-blue-500"} font-bold`}
+                      >
+                        {el.user_info.fullName}{" "}
+                        {isTeacherReply && <>(Teacher)</>}
+                      </p>
                       <p>{el.content}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-gray-500">

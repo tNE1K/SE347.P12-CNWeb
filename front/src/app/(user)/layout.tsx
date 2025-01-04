@@ -2,8 +2,8 @@ import React from "react";
 import NavBar from "@/app/component/navBar";
 
 export default function UserLayout({
-                                     children
-                                   }: {
+  children,
+}: {
   children: React.ReactNode;
 }) {
   return (
